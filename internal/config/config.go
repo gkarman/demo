@@ -1,8 +1,9 @@
 package config
 
 type Config struct {
-	Env string `env:"ENV" env-default:"local"`
-	DB  DBConfig
+	Env    string `env:"ENV" env-default:"local"`
+	DB     DBConfig
+	Logger LoggerConfig
 }
 
 type DBConfig struct {
@@ -11,4 +12,8 @@ type DBConfig struct {
 	Name string `env:"DB_NAME"`
 	User string `env:"DB_USER"`
 	Pass string `env:"DB_PASS"`
+}
+
+type LoggerConfig struct {
+	Level string `env:"LOG_LEVEL"`
 }

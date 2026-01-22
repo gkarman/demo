@@ -1,6 +1,0 @@
-db:
-  host: "localhost1"
-  port: 54321
-  name: "demo1"
-  user: "user1"
-  pass: "pass1"

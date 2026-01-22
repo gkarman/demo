@@ -11,5 +11,4 @@ func main() {
 	cfg := config.MustLoad("configs/config.yaml")
 	log := logger.New(logger.Config{Level: cfg.Logger.Level})
 	slog.SetDefault(log)
-
 }

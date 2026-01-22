@@ -13,11 +13,9 @@ linters:
   enable:
     - govet
     - staticcheck
-    - typecheck
     - errcheck
     - ineffassign
     - unused
-    - gosimple
     - errorlint
     - nilerr
     - bodyclose

@@ -1,6 +1,6 @@
 module github.com/gkarman/demo
 
-go 1.23.5
+go 1.25.6
 
 require github.com/ilyakaznacheev/cleanenv v1.5.0
 

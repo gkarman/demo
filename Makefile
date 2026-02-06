@@ -1,9 +1,14 @@
-ENV_FILE ?= .env.local
-STEP ?=
+ENV_FILE ?= .env
 
 define run_with_env
 	@set -a; source $(ENV_FILE); set +a; $(1)
 endef
+
+up:
+	docker compose up -d db
+
+down:
+	docker compose down
 
 run:
 	$(call run_with_env,go run ./cmd/demo)
@@ -12,10 +17,13 @@ lint:
 	$(call run_with_env,golangci-lint run)
 
 migrate-up:
-	$(call run_with_env,go run ./cmd/migrate up $(if $(STEP),--step=$(STEP)))
+	docker compose run --rm migrate up
 
 migrate-down:
-	$(call run_with_env,go run ./cmd/migrate down $(if $(STEP),--step=$(STEP)))
+	docker compose run --rm migrate down 1
 
 migrate-version:
-	$(call run_with_env,go run ./cmd/migrate version)
+	docker compose run --rm migrate version
+
+migrate-create:
+	docker compose run --rm migrate create -ext sql -dir /migrations $(name)

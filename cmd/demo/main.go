@@ -13,6 +13,6 @@ func main() {
 	slog.SetDefault(log)
 
 	log.Info("Старт приложения")
-	log.Debug("Конфиг",
+	log.Info("Конфиг",
 		"Config", cfg)
 }

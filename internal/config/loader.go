@@ -1,17 +1,15 @@
 package config
 
 import (
-	"log"
-
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-func MustLoad(path string) *Config {
+func LoadConfig() (*Config, error) {
 	var cfg Config
 
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
-		log.Fatalf("failed to read env: %v", err)
+		return nil, err
 	}
 
-	return &cfg
+	return &cfg, nil
 }

@@ -2,33 +2,61 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/gkarman/demo/internal/db"
-	"github.com/gkarman/demo/internal/repository/user"
-	_ "github.com/jackc/pgx/v5/stdlib"
-
 	"github.com/gkarman/demo/internal/config"
+	"github.com/gkarman/demo/internal/db"
 	"github.com/gkarman/demo/internal/logger"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type User struct {
-	ID   string
-	Name string
+func main() {
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	if err := run(ctx); err != nil {
+		slog.Error("application failed", "error", err)
+		os.Exit(1)
+	}
 }
 
-func main() {
-	cfg := config.MustLoad("configs/config.yaml")
+func run(ctx context.Context) error {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+
 	log := logger.New(logger.Config{Level: cfg.Logger.Level})
 	slog.SetDefault(log)
-	log.Info("config", cfg)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	log.Info("connecting to database")
+	pool, err := initPostgres(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("connect to db: %w", err)
+	}
+	log.Info("database connected")
+
+	<-ctx.Done()
+	pool.Close()
+	log.Info("shutting down application", "reason", ctx.Err())
+
+	return nil
+}
+
+func initPostgres(parent context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
+	ctx, cancel := context.WithTimeout(parent, 10*time.Second)
 	defer cancel()
 
-	pg, err := db.New(ctx, db.Config{
+	pool, err := db.NewPool(ctx, db.Config{
 		DSN:             cfg.DB.DSN(),
 		MaxConns:        cfg.DB.MaxConnections,
 		MinConns:        cfg.DB.MinConnections,
@@ -37,19 +65,8 @@ func main() {
 	})
 
 	if err != nil {
-		log.Error("failed to connect to database", "error", err)
-		os.Exit(1)
+		return nil, err
 	}
-	defer pg.Close()
 
-	log.Info("database connected successfully")
-
-
-
-	userRepo := user.New(pg.Pool)
-	u, err := userRepo.GetByID(ctx, "d1c38fc3-6b21-4b62-bf4c-5a86c05235a2")
-	if err != nil {
-		log.Error("user repo", err)
-	}
-	log.Info("user", u)
+	return pool, nil
 }

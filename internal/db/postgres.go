@@ -2,14 +2,11 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-type Postgres struct {
-	Pool *pgxpool.Pool
-}
 
 type Config struct {
 	DSN             string
@@ -19,32 +16,50 @@ type Config struct {
 	MaxConnIdleTime time.Duration
 }
 
-func New(ctx context.Context, cfg Config) (*Postgres, error) {
+func NewPool(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
+	if err := validateConfig(cfg); err != nil {
+		return nil, fmt.Errorf("invalid config: %w", err)
+	}
+
 	poolCfg, err := pgxpool.ParseConfig(cfg.DSN)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse DSN: %w", err)
 	}
 
 	poolCfg.MaxConns = cfg.MaxConns
 	poolCfg.MinConns = cfg.MinConns
 	poolCfg.MaxConnLifetime = cfg.MaxConnLifetime
 	poolCfg.MaxConnIdleTime = cfg.MaxConnIdleTime
+	poolCfg.HealthCheckPeriod = time.Minute
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create pool: %w", err)
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		return nil, err
+		pool.Close()
+		return nil, fmt.Errorf("ping database: %w", err)
 	}
 
-	return &Postgres{Pool: pool}, nil
+	return pool, nil
 }
 
-// Close закрывает пул соединений с базой данных
-func (p *Postgres) Close() {
-	if p.Pool != nil {
-		p.Pool.Close()
+func validateConfig(cfg Config) error {
+	if cfg.DSN == "" {
+		return fmt.Errorf("DSN is required")
 	}
+	if cfg.MaxConns <= 0 {
+		return fmt.Errorf("MaxConns must be positive, got %d", cfg.MaxConns)
+	}
+	if cfg.MaxConns > 500 {
+		return fmt.Errorf("MaxConns too large: %d", cfg.MaxConns)
+	}
+	if cfg.MinConns < 0 {
+		return fmt.Errorf("MinConns must be non-negative, got %d", cfg.MinConns)
+	}
+	if cfg.MinConns > cfg.MaxConns {
+		return fmt.Errorf("MinConns (%d) cannot be greater than MaxConns (%d)", cfg.MinConns, cfg.MaxConns)
+	}
+	return nil
 }

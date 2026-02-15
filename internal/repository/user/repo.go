@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gkarman/demo/internal/domain/user"
+	"github.com/gkarman/demo/internal/domain/car"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,7 +18,7 @@ func New(pool *pgxpool.Pool) *Repo {
 	return &Repo{pool: pool}
 }
 
-func (r *Repo) GetByID(ctx context.Context, id string) (*user.User, error) {
+func (r *Repo) GetByID(ctx context.Context, id string) (*car.Car, error) {
 	const q = `
 		SELECT id, name
 		FROM users
@@ -27,7 +27,7 @@ func (r *Repo) GetByID(ctx context.Context, id string) (*user.User, error) {
 
 	row := r.pool.QueryRow(ctx, q, id)
 
-	var u user.User
+	var u car.Car
 	if err := row.Scan(&u.ID, &u.Name); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil

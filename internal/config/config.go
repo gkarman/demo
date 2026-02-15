@@ -6,6 +6,7 @@ type Config struct {
 	Env    string `env:"ENV" env-default:"local"`
 	DB     DBConfig
 	Logger LoggerConfig
+	ServerHttp ServerHttpConfig
 }
 
 type DBConfig struct {
@@ -28,4 +29,10 @@ func (c DBConfig) DSN() string {
 
 type LoggerConfig struct {
 	Level string `env:"LOG_LEVEL"`
+}
+
+type ServerHttpConfig struct {
+	Addr                string `env:"SERVER_HTTP_ADDR"`
+	ReadTimeoutSeconds  int    `env:"SERVER_HTTP_READ_TIMEOUT_SECONDS_SECONDS"`
+	WriteTimeoutSeconds int    `env:"SERVER_HTTP_WRITE_TIMEOUT_SECONDS_SECONDS"`
 }

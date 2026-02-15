@@ -3,6 +3,7 @@ module github.com/gkarman/demo
 go 1.25.6
 
 require (
+	github.com/go-chi/chi/v5 v5.2.5
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.8.0
 )

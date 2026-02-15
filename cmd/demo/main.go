@@ -12,6 +12,7 @@ import (
 	"github.com/gkarman/demo/internal/config"
 	"github.com/gkarman/demo/internal/db"
 	"github.com/gkarman/demo/internal/logger"
+	httpTransport "github.com/gkarman/demo/internal/transport/http"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -41,13 +42,21 @@ func run(ctx context.Context) error {
 	log.Info("connecting to database")
 	pool, err := initPostgres(ctx, cfg)
 	if err != nil {
-		return fmt.Errorf("connect to db: %w", err)
+		return fmt.Errorf("connect to pool: %w", err)
 	}
 	log.Info("database connected")
 
+	serverHttp := initServerHttp(log, pool, cfg)
+	serverHttp.Start()
+
 	<-ctx.Done()
-	pool.Close()
+
 	log.Info("shutting down application", "reason", ctx.Err())
+	pool.Close()
+	err = serverHttp.Stop(ctx)
+	if err != nil {
+		log.Error("shutting down application", "reason", ctx.Err())
+	}
 
 	return nil
 }
@@ -69,4 +78,22 @@ func initPostgres(parent context.Context, cfg *config.Config) (*pgxpool.Pool, er
 	}
 
 	return pool, nil
+}
+
+func initServerHttp(log *slog.Logger, pool *pgxpool.Pool, cfg *config.Config) *httpTransport.Server {
+	router := httpTransport.NewRouter(
+		log,
+		pool,
+	)
+	server := httpTransport.NewServer(
+		log,
+		router,
+		httpTransport.Config{
+			Addr:         cfg.ServerHttp.Addr,
+			ReadTimeout:  time.Duration(cfg.ServerHttp.ReadTimeoutSeconds) * time.Second,
+			WriteTimeout: time.Duration(cfg.ServerHttp.WriteTimeoutSeconds) * time.Second,
+		},
+	)
+
+	return server
 }

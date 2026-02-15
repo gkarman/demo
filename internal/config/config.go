@@ -33,6 +33,6 @@ type LoggerConfig struct {
 
 type ServerHttpConfig struct {
 	Addr                string `env:"SERVER_HTTP_ADDR"`
-	ReadTimeoutSeconds  int    `env:"SERVER_HTTP_READ_TIMEOUT_SECONDS_SECONDS"`
-	WriteTimeoutSeconds int    `env:"SERVER_HTTP_WRITE_TIMEOUT_SECONDS_SECONDS"`
+	ReadTimeoutSeconds  int    `env:"SERVER_HTTP_READ_TIMEOUT_SECONDS"`
+	WriteTimeoutSeconds int    `env:"SERVER_HTTP_WRITE_TIMEOUT_SECONDS"`
 }

@@ -53,9 +53,11 @@ func run(ctx context.Context) error {
 
 	log.Info("shutting down application", "reason", ctx.Err())
 	pool.Close()
-	err = serverHttp.Stop(ctx)
-	if err != nil {
-		log.Error("shutting down application", "reason", ctx.Err())
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := serverHttp.Stop(shutdownCtx); err != nil {
+		log.Error("server shutdown failed", "error", err)
 	}
 
 	return nil

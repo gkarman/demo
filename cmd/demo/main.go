@@ -52,13 +52,14 @@ func run(ctx context.Context) error {
 	<-ctx.Done()
 
 	log.Info("shutting down application", "reason", ctx.Err())
-	pool.Close()
+
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := serverHttp.Stop(shutdownCtx); err != nil {
 		log.Error("server shutdown failed", "error", err)
 	}
+	pool.Close()
 
 	return nil
 }

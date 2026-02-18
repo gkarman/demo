@@ -15,7 +15,7 @@ import (
 
 type App struct {
 	log    *slog.Logger
-	pool   *pgxpool.Pool
+	db     *pgxpool.Pool
 	server *httpTransport.Server
 }
 
@@ -31,7 +31,7 @@ func New(ctx context.Context) (*App, error) {
 	log.Info("connecting to database")
 	pool, err := initPostgres(ctx, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("connect to pool: %w", err)
+		return nil, fmt.Errorf("connect to db: %w", err)
 	}
 	log.Info("database connected")
 
@@ -48,13 +48,13 @@ func New(ctx context.Context) (*App, error) {
 
 	return &App{
 		log:    log,
-		pool:   pool,
+		db:     pool,
 		server: server,
 	}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
-	defer a.pool.Close()
+	defer a.db.Close()
 	a.server.Start()
 
 	<-ctx.Done()

@@ -6,23 +6,25 @@ import (
 
 	"github.com/gkarman/demo/internal/domain/car"
 	"github.com/gkarman/demo/internal/logger"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type CarHandler struct {
-	db  *pgxpool.Pool
+	repo car.Repository
 }
 
-func NewCarHandler(db *pgxpool.Pool, ) *CarHandler {
+func NewCarHandler(repo car.Repository) *CarHandler {
 	return &CarHandler{
-		db:  db,
+		repo: repo,
 	}
 }
 
 func (h *CarHandler) GetCars(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
-	_ = log
-	cars := car.Car{}
+
 	w.Header().Set("Content-Type", "application/json")
+	cars, err := h.repo.List(r.Context())
+	if err != nil {
+		log.Debug("get cars error", "error", err)
+	}
 	json.NewEncoder(w).Encode(cars)
 }

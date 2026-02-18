@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/gkarman/demo/internal/logger"
 )
 
 type HomeHandler struct {
-	log *slog.Logger
 }
 
 func NewHomeHandler() *HomeHandler {

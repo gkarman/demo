@@ -7,20 +7,20 @@ import (
 	"github.com/gkarman/demo/internal/domain/car"
 )
 
-type GetByIdService struct {
+type GetByIDService struct {
 	repo car.Repo
 }
 
-func NewGetByIdService(repo car.Repo) *ListService {
-	return &ListService{
+func NewGetByIDService(repo car.Repo) *GetByIDService {
+	return &GetByIDService{
 		repo: repo,
 	}
 }
 
-func (s *GetByIdService) Execute(ctx context.Context, id string) (*car.Car, error) {
+func (s *GetByIDService) Execute(ctx context.Context, id string) (*car.Car, error) {
 	c, err := s.repo.GetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf(`GetByIdService.Execute: %w`, err)
+		return nil, fmt.Errorf(`GetByIDService.Execute: %w`, err)
 	}
 	return c, nil
 }

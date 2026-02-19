@@ -29,13 +29,13 @@ func New(ctx context.Context) (*App, error) {
 	slog.SetDefault(log)
 
 	log.Info("connecting to database")
-	pool, err := initPostgres(ctx, cfg)
+	postgresDB, err := initPostgres(ctx, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("connect to db: %w", err)
+		return nil, fmt.Errorf("connect to postgresDB: %w", err)
 	}
 	log.Info("database connected")
 
-	router := httpTransport.NewRouter(log, pool)
+	router := httpTransport.NewRouter(log, postgresDB)
 	server := httpTransport.NewServer(
 		log,
 		router,
@@ -48,7 +48,7 @@ func New(ctx context.Context) (*App, error) {
 
 	return &App{
 		log:    log,
-		db:     pool,
+		db:     postgresDB,
 		server: server,
 	}, nil
 }

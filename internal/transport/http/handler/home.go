@@ -10,8 +10,7 @@ type HomeHandler struct {
 }
 
 func NewHomeHandler() *HomeHandler {
-	return &HomeHandler{
-	}
+	return &HomeHandler{}
 }
 
 func (h *HomeHandler) Home(w http.ResponseWriter, r *http.Request, ) {

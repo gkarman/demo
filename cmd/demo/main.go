@@ -25,7 +25,7 @@ func main() {
 	}
 
 	if err := a.Run(ctx); err != nil {
-		slog.Error("application failed start", "error", err)
+		slog.Error("application failed", "error", err)
 		os.Exit(1)
 	}
 }

@@ -9,10 +9,10 @@ import (
 )
 
 type CarHandler struct {
-	repo car.Repository
+	repo car.Repo
 }
 
-func NewCarHandler(repo car.Repository) *CarHandler {
+func NewCarHandler(repo car.Repo) *CarHandler {
 	return &CarHandler{
 		repo: repo,
 	}
@@ -24,7 +24,9 @@ func (h *CarHandler) GetCars(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	cars, err := h.repo.List(r.Context())
 	if err != nil {
-		log.Debug("get cars error", "error", err)
+		log.Error("get cars failed", "error", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
 	}
 	json.NewEncoder(w).Encode(cars)
 }

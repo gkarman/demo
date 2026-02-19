@@ -32,7 +32,7 @@ type LoggerConfig struct {
 }
 
 type ServerHttpConfig struct {
-	Addr                string `env:"SERVER_HTTP_ADDR"`
-	ReadTimeoutSeconds  int    `env:"SERVER_HTTP_READ_TIMEOUT_SECONDS"`
-	WriteTimeoutSeconds int    `env:"SERVER_HTTP_WRITE_TIMEOUT_SECONDS"`
+	Addr                string `env:"SERVER_HTTP_ADDR" env-default:":8080"`
+	ReadTimeoutSeconds  int    `env:"SERVER_HTTP_READ_TIMEOUT_SECONDS" env-default:"10"`
+	WriteTimeoutSeconds int    `env:"SERVER_HTTP_WRITE_TIMEOUT_SECONDS" env-default:"10"`
 }

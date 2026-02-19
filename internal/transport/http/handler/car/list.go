@@ -1,28 +1,28 @@
-package handler
+package car
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gkarman/demo/internal/domain/car"
 	"github.com/gkarman/demo/internal/logger"
+	"github.com/gkarman/demo/internal/service/car"
 )
 
-type CarHandler struct {
-	repo car.Repo
+type ListHandler struct {
+	service *car.ListService
 }
 
-func NewCarHandler(repo car.Repo) *CarHandler {
-	return &CarHandler{
-		repo: repo,
+func NewCarListHandler(service *car.ListService) *ListHandler {
+	return &ListHandler{
+		service: service,
 	}
 }
 
-func (h *CarHandler) GetCars(w http.ResponseWriter, r *http.Request) {
+func (h *ListHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
 	w.Header().Set("Content-Type", "application/json")
-	cars, err := h.repo.List(r.Context())
+	cars, err := h.service.Execute(r.Context())
 	if err != nil {
 		log.Error("get cars failed", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)

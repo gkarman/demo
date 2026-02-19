@@ -11,7 +11,7 @@ down:
 	docker compose down
 
 run:
-	$(call run_with_env,go run ./cmd/demo)
+	$(call run_with_env,go run ./cmd/api)
 
 lint:
 	$(call run_with_env,golangci-lint run)

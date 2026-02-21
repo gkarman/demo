@@ -32,11 +32,11 @@ func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool) {
 	listService := car_service.NewListService(carRepo)
 	listHandler := car_handler.NewCarListHandler(listService)
 
-	getByIDService := car_service.NewGetByIDService(carRepo)
+	getByIDService := car_service.NewGetCarService(carRepo)
 	getByIDHandler := car_handler.NewGetByIDHandler(getByIDService)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/cars", listHandler.Execute)
-		r.Get("/car/{id}", getByIDHandler.Execute)
+		r.Get("/cars", listHandler.Handle)
+		r.Get("/cars/{id}", getByIDHandler.Handle)
 	})
 }

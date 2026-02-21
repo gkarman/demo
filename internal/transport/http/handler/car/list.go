@@ -6,6 +6,7 @@ import (
 
 	"github.com/gkarman/demo/internal/logger"
 	"github.com/gkarman/demo/internal/service/car"
+	"github.com/gkarman/demo/internal/service/car/requestdto"
 )
 
 type ListHandler struct {
@@ -18,15 +19,15 @@ func NewCarListHandler(service *car.ListService) *ListHandler {
 	}
 }
 
-func (h *ListHandler) Execute(w http.ResponseWriter, r *http.Request) {
+func (h *ListHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
 	w.Header().Set("Content-Type", "application/json")
-	cars, err := h.service.Execute(r.Context())
+	resp, err := h.service.Execute(r.Context(), reqdto.GetList{})
 	if err != nil {
 		log.Error("get cars failed", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(cars)
+	json.NewEncoder(w).Encode(resp)
 }

@@ -6,29 +6,30 @@ import (
 
 	"github.com/gkarman/demo/internal/logger"
 	car "github.com/gkarman/demo/internal/service/car"
+	"github.com/gkarman/demo/internal/service/car/requestdto"
 	"github.com/go-chi/chi/v5"
 )
 
 type GetByIDHandler struct {
-	service *car.GetByIDService
+	service *car.GetCarService
 }
 
-func NewGetByIDHandler(service *car.GetByIDService) *GetByIDHandler {
+func NewGetByIDHandler(service *car.GetCarService) *GetByIDHandler {
 	return &GetByIDHandler{
 		service: service,
 	}
 }
 
-func (h *GetByIDHandler) Execute(w http.ResponseWriter, r *http.Request) {
+func (h *GetByIDHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
 	w.Header().Set("Content-Type", "application/json")
 	id := chi.URLParam(r, "id")
-	c, err := h.service.Execute(r.Context(), id)
+	resp, err := h.service.Execute(r.Context(), &reqdto.GetCar{CarId: id})
 	if err != nil {
 		log.Error("get car failed", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(c)
+	json.NewEncoder(w).Encode(resp)
 }

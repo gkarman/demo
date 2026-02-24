@@ -10,20 +10,20 @@ import (
 	"github.com/gkarman/demo/internal/service/car/responsedto"
 )
 
-type GetCarService struct {
+type GetService struct {
 	repo car.Repo
 }
 
-func NewGetCarService(repo car.Repo) *GetCarService {
-	return &GetCarService{
+func NewGet(repo car.Repo) *GetService {
+	return &GetService{
 		repo: repo,
 	}
 }
 
-func (s *GetCarService) Execute(ctx context.Context, req *requestdto.GetCar) (*responsedto.GetCar, error) {
+func (s *GetService) Execute(ctx context.Context, req *requestdto.GetCar) (*responsedto.GetCar, error) {
 	c, err := s.repo.GetByID(ctx, req.CarId)
 	if err != nil {
-		return nil, fmt.Errorf(`GetCarService.handel: %w`, err)
+		return nil, fmt.Errorf(`GetService.handel: %w`, err)
 	}
 	resp := &responsedto.GetCar{
 		Car: mapper.CarFromDomain(c),

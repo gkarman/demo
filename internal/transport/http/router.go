@@ -4,8 +4,8 @@ import (
 	"log/slog"
 
 	"github.com/gkarman/demo/internal/repository/car"
-	car_service "github.com/gkarman/demo/internal/service/car"
-	car_handler "github.com/gkarman/demo/internal/transport/http/handler/car"
+	carservice "github.com/gkarman/demo/internal/service/car"
+	carhandler "github.com/gkarman/demo/internal/transport/http/handler/car"
 	"github.com/gkarman/demo/internal/transport/http/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,16 +27,16 @@ func registerHomeRoutes(r *chi.Mux) {
 }
 
 func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool) {
-	carRepo := car.New(db)
+	repo := car.New(db)
 
-	listService := car_service.NewListService(carRepo)
-	listHandler := car_handler.NewCarListHandler(listService)
+	listSvc := carservice.NewList(repo)
+	listHandler := carhandler.NewList(listSvc)
 
-	getByIDService := car_service.NewGetCarService(carRepo)
-	getByIDHandler := car_handler.NewGetByIDHandler(getByIDService)
+	getCarSvc := carservice.NewGet(repo)
+	getCarHandler := carhandler.NewGetCarHandler(getCarSvc)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/cars", listHandler.Handle)
-		r.Get("/cars/{id}", getByIDHandler.Handle)
+		r.Get("/cars/{id}", getCarHandler.Handle)
 	})
 }

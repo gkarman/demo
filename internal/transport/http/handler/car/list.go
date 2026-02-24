@@ -10,10 +10,10 @@ import (
 )
 
 type ListHandler struct {
-	service *car.ListService
+	service *car.List
 }
 
-func NewCarListHandler(service *car.ListService) *ListHandler {
+func NewList(service *car.List) *ListHandler {
 	return &ListHandler{
 		service: service,
 	}
@@ -23,7 +23,7 @@ func (h *ListHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
 	w.Header().Set("Content-Type", "application/json")
-	resp, err := h.service.Execute(r.Context(), reqdto.GetList{})
+	resp, err := h.service.Execute(r.Context(), requestdto.GetList{})
 	if err != nil {
 		log.Error("get cars failed", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)

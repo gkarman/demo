@@ -11,10 +11,10 @@ import (
 )
 
 type GetByIDHandler struct {
-	service *car.GetCarService
+	service *car.GetService
 }
 
-func NewGetByIDHandler(service *car.GetCarService) *GetByIDHandler {
+func NewGetCarHandler(service *car.GetService) *GetByIDHandler {
 	return &GetByIDHandler{
 		service: service,
 	}

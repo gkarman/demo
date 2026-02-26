@@ -27,3 +27,6 @@ migrate-version:
 
 migrate-create:
 	docker compose run --rm migrate create -ext sql -dir /migrations $(name)
+
+generate-proto:
+	buf generate

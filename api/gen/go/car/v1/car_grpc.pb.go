@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             (unknown)
-// source: car/car.proto
+// source: car/v1/car.proto
 
 package car
 
@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Car_Get_FullMethodName = "/car.v1.Car/get"
+	Car_GetCar_FullMethodName = "/car.v1.Car/GetCar"
 )
 
 // CarClient is the client API for Car service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CarClient interface {
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
+	GetCar(ctx context.Context, in *GetCarRequest, opts ...grpc.CallOption) (*GetCarResponse, error)
 }
 
 type carClient struct {
@@ -37,10 +37,10 @@ func NewCarClient(cc grpc.ClientConnInterface) CarClient {
 	return &carClient{cc}
 }
 
-func (c *carClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+func (c *carClient) GetCar(ctx context.Context, in *GetCarRequest, opts ...grpc.CallOption) (*GetCarResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetResponse)
-	err := c.cc.Invoke(ctx, Car_Get_FullMethodName, in, out, cOpts...)
+	out := new(GetCarResponse)
+	err := c.cc.Invoke(ctx, Car_GetCar_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *carClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOp
 // All implementations must embed UnimplementedCarServer
 // for forward compatibility.
 type CarServer interface {
-	Get(context.Context, *GetRequest) (*GetResponse, error)
+	GetCar(context.Context, *GetCarRequest) (*GetCarResponse, error)
 	mustEmbedUnimplementedCarServer()
 }
 
@@ -62,8 +62,8 @@ type CarServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCarServer struct{}
 
-func (UnimplementedCarServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Get not implemented")
+func (UnimplementedCarServer) GetCar(context.Context, *GetCarRequest) (*GetCarResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCar not implemented")
 }
 func (UnimplementedCarServer) mustEmbedUnimplementedCarServer() {}
 func (UnimplementedCarServer) testEmbeddedByValue()             {}
@@ -86,20 +86,20 @@ func RegisterCarServer(s grpc.ServiceRegistrar, srv CarServer) {
 	s.RegisterService(&Car_ServiceDesc, srv)
 }
 
-func _Car_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
+func _Car_GetCar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCarRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CarServer).Get(ctx, in)
+		return srv.(CarServer).GetCar(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Car_Get_FullMethodName,
+		FullMethod: Car_GetCar_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CarServer).Get(ctx, req.(*GetRequest))
+		return srv.(CarServer).GetCar(ctx, req.(*GetCarRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,10 +112,10 @@ var Car_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CarServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "get",
-			Handler:    _Car_Get_Handler,
+			MethodName: "GetCar",
+			Handler:    _Car_GetCar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "car/car.proto",
+	Metadata: "car/v1/car.proto",
 }

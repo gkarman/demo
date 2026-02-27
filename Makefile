@@ -1,4 +1,5 @@
 ENV_FILE ?= .env
+BUF_VERSION := 1.36.0
 
 define run_with_env
 	@set -a; source $(ENV_FILE); set +a; $(1)
@@ -28,5 +29,12 @@ migrate-version:
 migrate-create:
 	docker compose run --rm migrate create -ext sql -dir /migrations $(name)
 
-generate-proto:
-	buf generate
+
+proto-gen:
+	docker compose run --rm buf generate
+
+proto-lint:
+	docker compose run --rm buf lint
+
+proto-breaking:
+	docker compose run --rm buf breaking --against '.git#branch=main'

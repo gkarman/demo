@@ -5,14 +5,14 @@ package car.v1;
 option go_package = "github.com/gkarman/demo/api/gen/car;car";
 
 service Car {
-  rpc get(getRequest) returns (getResponse) {}
+  rpc GetCar(GetCarRequest) returns (GetCarResponse) {}
 }
 
-message getRequest {
+message GetCarRequest {
   string id = 1;
 }
 
-message getResponse {
+message GetCarResponse {
   string id = 1;
   string name = 2;
 }

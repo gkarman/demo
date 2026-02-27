@@ -25,5 +25,12 @@ services:
       "-database", "${DB_URL_MIGRATE}"
     ]
 
+  buf:
+    image: bufbuild/buf:1.66.0
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    entrypoint: ["buf"]
+
 volumes:
   db_data:

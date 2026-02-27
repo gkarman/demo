@@ -3,10 +3,11 @@ package config
 import "fmt"
 
 type Config struct {
-	Env    string `env:"ENV" env-default:"local"`
-	DB     DBConfig
-	Logger LoggerConfig
+	Env        string `env:"ENV" env-default:"local"`
+	DB         DBConfig
+	Logger     LoggerConfig
 	ServerHttp ServerHttpConfig
+	ServerGRPC ServerGRPCConfig
 }
 
 type DBConfig struct {
@@ -35,4 +36,8 @@ type ServerHttpConfig struct {
 	Addr                string `env:"SERVER_HTTP_ADDR" env-default:":8080"`
 	ReadTimeoutSeconds  int    `env:"SERVER_HTTP_READ_TIMEOUT_SECONDS" env-default:"10"`
 	WriteTimeoutSeconds int    `env:"SERVER_HTTP_WRITE_TIMEOUT_SECONDS" env-default:"10"`
+}
+
+type ServerGRPCConfig struct {
+	Addr string `env:"SERVER_GRPC_ADDR" env-default:"localhost:5051"`
 }

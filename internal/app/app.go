@@ -9,14 +9,16 @@ import (
 	"github.com/gkarman/demo/internal/config"
 	"github.com/gkarman/demo/internal/db"
 	"github.com/gkarman/demo/internal/logger"
+	grpcTransport "github.com/gkarman/demo/internal/transport/grpc"
 	httpTransport "github.com/gkarman/demo/internal/transport/http"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type App struct {
-	log    *slog.Logger
-	db     *pgxpool.Pool
-	server *httpTransport.Server
+	log        *slog.Logger
+	db         *pgxpool.Pool
+	serverHttp *httpTransport.Server
+	grpcServer *grpcTransport.Server
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -25,8 +27,7 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("load config: %w", err)
 	}
 
-	log := logger.New(logger.Config{Level: cfg.Logger.Level})
-	slog.SetDefault(log)
+	log := initLogger(cfg)
 
 	log.Info("connecting to database")
 	postgresDB, err := initPostgres(ctx, cfg)
@@ -35,8 +36,29 @@ func New(ctx context.Context) (*App, error) {
 	}
 	log.Info("database connected")
 
-	router := httpTransport.NewRouter(log, postgresDB)
-	server := httpTransport.NewServer(
+	serverHttp := initHTTPServer(log, postgresDB, cfg)
+	serverGrpc, err := initGRPCServer(log, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("create gRPC server: %w", err)
+	}
+
+	return &App{
+		log:        log,
+		db:         postgresDB,
+		serverHttp: serverHttp,
+		grpcServer: serverGrpc,
+	}, nil
+}
+
+func initLogger(cfg *config.Config) *slog.Logger {
+	log := logger.New(logger.Config{Level: cfg.Logger.Level})
+	slog.SetDefault(log)
+	return log
+}
+
+func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) *httpTransport.Server {
+	router := httpTransport.NewRouter(log, db)
+	return httpTransport.NewServer(
 		log,
 		router,
 		httpTransport.Config{
@@ -45,17 +67,21 @@ func New(ctx context.Context) (*App, error) {
 			WriteTimeout: time.Duration(cfg.ServerHttp.WriteTimeoutSeconds) * time.Second,
 		},
 	)
+}
 
-	return &App{
-		log:    log,
-		db:     postgresDB,
-		server: server,
-	}, nil
+func initGRPCServer(log *slog.Logger, cfg *config.Config) (*grpcTransport.Server, error) {
+	return grpcTransport.NewServer(
+		log,
+		grpcTransport.Config{
+			Addr: cfg.ServerGRPC.Addr,
+		},
+	)
 }
 
 func (a *App) Run(ctx context.Context) error {
 	defer a.db.Close()
-	a.server.Start()
+	a.serverHttp.Start()
+	a.grpcServer.Start()
 
 	<-ctx.Done()
 
@@ -63,10 +89,11 @@ func (a *App) Run(ctx context.Context) error {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	if err := a.server.Stop(shutdownCtx); err != nil {
-		a.log.Error("server shutdown failed", "error", err)
+	if err := a.serverHttp.Stop(shutdownCtx); err != nil {
+		a.log.Error("serverHttp shutdown failed", "error", err)
 		return err
 	}
+	a.grpcServer.Stop()
 
 	return nil
 }

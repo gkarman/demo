@@ -25,7 +25,7 @@ func (h *GetByIDHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	id := chi.URLParam(r, "id")
-	resp, err := h.service.Execute(r.Context(), &reqdto.GetCar{CarId: id})
+	resp, err := h.service.Execute(r.Context(), &requestdto.GetCar{CarId: id})
 	if err != nil {
 		log.Error("get car failed", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)

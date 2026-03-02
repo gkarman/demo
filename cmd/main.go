@@ -20,7 +20,7 @@ func main() {
 
 	a, err := app.New(ctx)
 	if err != nil {
-		slog.Error("application failed", "error", err)
+		slog.Error("application build failed", "error", err)
 		os.Exit(1)
 	}
 

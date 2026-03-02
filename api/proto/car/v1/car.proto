@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package car.v1;
 
-option go_package = "github.com/gkarman/demo/api/gen/car;car";
+option go_package = "github.com/gkarman/demo/api/gen/go/car/v1;car";
 
 service Car {
   rpc GetCar(GetCarRequest) returns (GetCarResponse) {}

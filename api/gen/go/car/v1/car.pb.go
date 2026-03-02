@@ -259,7 +259,7 @@ const file_car_v1_car_proto_rawDesc = "" +
 	"\x03Car\x129\n" +
 	"\x06GetCar\x12\x15.car.v1.GetCarRequest\x1a\x16.car.v1.GetCarResponse\"\x00\x12E\n" +
 	"\n" +
-	"GetCarList\x12\x19.car.v1.GetCarListRequest\x1a\x1a.car.v1.GetCarListResponse\"\x00B)Z'github.com/gkarman/demo/api/gen/car;carb\x06proto3"
+	"GetCarList\x12\x19.car.v1.GetCarListRequest\x1a\x1a.car.v1.GetCarListResponse\"\x00B/Z-github.com/gkarman/demo/api/gen/go/car/v1;carb\x06proto3"
 
 var (
 	file_car_v1_car_proto_rawDescOnce sync.Once

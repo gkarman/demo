@@ -6,6 +6,7 @@ option go_package = "github.com/gkarman/demo/api/gen/car;car";
 
 service Car {
   rpc GetCar(GetCarRequest) returns (GetCarResponse) {}
+  rpc GetCarList(GetCarListRequest) returns (GetCarListResponse) {}
 }
 
 message GetCarRequest {
@@ -13,6 +14,18 @@ message GetCarRequest {
 }
 
 message GetCarResponse {
+  CarInfo car = 1;
+}
+
+message GetCarListRequest {
+
+}
+
+message GetCarListResponse {
+  repeated CarInfo Cars = 1;
+}
+
+message CarInfo {
   string id = 1;
   string name = 2;
 }

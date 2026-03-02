@@ -10,8 +10,10 @@ import (
 	"github.com/gkarman/demo/internal/db"
 	"github.com/gkarman/demo/internal/logger"
 	grpcTransport "github.com/gkarman/demo/internal/transport/grpc"
+	grpcinterceptor "github.com/gkarman/demo/internal/transport/grpc/interceptor"
 	httpTransport "github.com/gkarman/demo/internal/transport/http"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc"
 )
 
 type App struct {
@@ -37,7 +39,7 @@ func New(ctx context.Context) (*App, error) {
 	log.Info("database connected")
 
 	serverHttp := initHTTPServer(log, postgresDB, cfg)
-	serverGrpc, err := initGRPCServer(log, cfg)
+	serverGrpc, err := initGRPCServer(log, postgresDB, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("create gRPC server: %w", err)
 	}
@@ -69,13 +71,23 @@ func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) *htt
 	)
 }
 
-func initGRPCServer(log *slog.Logger, cfg *config.Config) (*grpcTransport.Server, error) {
-	return grpcTransport.NewServer(
+func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) (*grpcTransport.Server, error) {
+	grpcConf := grpcTransport.Config{
+		Addr: cfg.ServerGRPC.Addr,
+	}
+	grpcServer, err := grpcTransport.NewServer(
 		log,
-		grpcTransport.Config{
-			Addr: cfg.ServerGRPC.Addr,
-		},
+		grpcConf,
+		grpc.ChainUnaryInterceptor(
+			grpcinterceptor.Logger(log),
+		),
 	)
+	if err != nil {
+		return nil, fmt.Errorf("create gRPC server with interceptors: %w", err)
+	}
+	grpcTransport.RegisterServices(grpcServer, log, db)
+
+	return grpcServer, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -93,7 +105,10 @@ func (a *App) Run(ctx context.Context) error {
 		a.log.Error("serverHttp shutdown failed", "error", err)
 		return err
 	}
-	a.grpcServer.Stop()
+	if err := a.grpcServer.Stop(shutdownCtx); err != nil {
+		a.log.Error("gRPC server shutdown failed", "error", err)
+		return err
+	}
 
 	return nil
 }

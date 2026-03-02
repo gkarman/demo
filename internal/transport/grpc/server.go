@@ -6,12 +6,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/gkarman/demo/api/gen/go/car/v1"
-	carservice "github.com/gkarman/demo/internal/service/car"
-	"github.com/gkarman/demo/internal/service/car/requestdto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Config struct {
@@ -24,14 +19,17 @@ type Server struct {
 	log        *slog.Logger
 }
 
-func NewServer(log *slog.Logger, cfg Config) (*Server, error) {
+func (s *Server) Registrar() grpc.ServiceRegistrar {
+	return s.grpcServer
+}
+
+func NewServer(log *slog.Logger, cfg Config, opts ...grpc.ServerOption) (*Server, error) {
 	lis, err := net.Listen("tcp", cfg.Addr)
 	if err != nil {
 		return nil, fmt.Errorf("listen: %w", err)
 	}
 
-	s := grpc.NewServer()
-	car.RegisterCarServer(s, &carServer{})
+	s := grpc.NewServer(opts...)
 
 	return &Server{
 		grpcServer: s,
@@ -49,24 +47,18 @@ func (s *Server) Start() {
 	}()
 }
 
-func (s *Server) Stop() {
+func (s *Server) Stop(ctx context.Context) error {
 	s.log.Info("stopping gRPC server")
-	s.grpcServer.GracefulStop()
-}
-
-type carServer struct {
-	car.UnimplementedCarServer
-	getService *carservice.GetService
-}
-
-func (s *carServer) GetCar(ctx context.Context, req *car.GetCarRequest) (*car.GetCarResponse, error) {
-	resp, err := s.getService.Execute(ctx, &requestdto.GetCar{CarId: req.Id})
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	done := make(chan struct{})
+	go func() {
+		s.grpcServer.GracefulStop()
+		close(done)
+	}()
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		s.grpcServer.Stop()
+		return ctx.Err()
 	}
-
-	return &car.GetCarResponse{
-		Id:   resp.Car.ID,
-		Name: resp.Car.Name,
-	}, nil
 }

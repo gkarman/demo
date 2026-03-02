@@ -67,8 +67,7 @@ func (x *GetCarRequest) GetId() string {
 
 type GetCarResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Car           *CarInfo               `protobuf:"bytes,1,opt,name=car,proto3" json:"car,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -103,14 +102,139 @@ func (*GetCarResponse) Descriptor() ([]byte, []int) {
 	return file_car_v1_car_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetCarResponse) GetId() string {
+func (x *GetCarResponse) GetCar() *CarInfo {
+	if x != nil {
+		return x.Car
+	}
+	return nil
+}
+
+type GetCarListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCarListRequest) Reset() {
+	*x = GetCarListRequest{}
+	mi := &file_car_v1_car_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCarListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCarListRequest) ProtoMessage() {}
+
+func (x *GetCarListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_car_v1_car_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCarListRequest.ProtoReflect.Descriptor instead.
+func (*GetCarListRequest) Descriptor() ([]byte, []int) {
+	return file_car_v1_car_proto_rawDescGZIP(), []int{2}
+}
+
+type GetCarListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cars          []*CarInfo             `protobuf:"bytes,1,rep,name=Cars,proto3" json:"Cars,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCarListResponse) Reset() {
+	*x = GetCarListResponse{}
+	mi := &file_car_v1_car_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCarListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCarListResponse) ProtoMessage() {}
+
+func (x *GetCarListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_car_v1_car_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCarListResponse.ProtoReflect.Descriptor instead.
+func (*GetCarListResponse) Descriptor() ([]byte, []int) {
+	return file_car_v1_car_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetCarListResponse) GetCars() []*CarInfo {
+	if x != nil {
+		return x.Cars
+	}
+	return nil
+}
+
+type CarInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CarInfo) Reset() {
+	*x = CarInfo{}
+	mi := &file_car_v1_car_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CarInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CarInfo) ProtoMessage() {}
+
+func (x *CarInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_car_v1_car_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CarInfo.ProtoReflect.Descriptor instead.
+func (*CarInfo) Descriptor() ([]byte, []int) {
+	return file_car_v1_car_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CarInfo) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *GetCarResponse) GetName() string {
+func (x *CarInfo) GetName() string {
 	if x != nil {
 		return x.Name
 	}
@@ -123,12 +247,19 @@ const file_car_v1_car_proto_rawDesc = "" +
 	"\n" +
 	"\x10car/v1/car.proto\x12\x06car.v1\"\x1f\n" +
 	"\rGetCarRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"4\n" +
-	"\x0eGetCarResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"3\n" +
+	"\x0eGetCarResponse\x12!\n" +
+	"\x03car\x18\x01 \x01(\v2\x0f.car.v1.CarInfoR\x03car\"\x13\n" +
+	"\x11GetCarListRequest\"9\n" +
+	"\x12GetCarListResponse\x12#\n" +
+	"\x04Cars\x18\x01 \x03(\v2\x0f.car.v1.CarInfoR\x04Cars\"-\n" +
+	"\aCarInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name2@\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name2\x87\x01\n" +
 	"\x03Car\x129\n" +
-	"\x06GetCar\x12\x15.car.v1.GetCarRequest\x1a\x16.car.v1.GetCarResponse\"\x00B)Z'github.com/gkarman/demo/api/gen/car;carb\x06proto3"
+	"\x06GetCar\x12\x15.car.v1.GetCarRequest\x1a\x16.car.v1.GetCarResponse\"\x00\x12E\n" +
+	"\n" +
+	"GetCarList\x12\x19.car.v1.GetCarListRequest\x1a\x1a.car.v1.GetCarListResponse\"\x00B)Z'github.com/gkarman/demo/api/gen/car;carb\x06proto3"
 
 var (
 	file_car_v1_car_proto_rawDescOnce sync.Once
@@ -142,19 +273,26 @@ func file_car_v1_car_proto_rawDescGZIP() []byte {
 	return file_car_v1_car_proto_rawDescData
 }
 
-var file_car_v1_car_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_car_v1_car_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_car_v1_car_proto_goTypes = []any{
-	(*GetCarRequest)(nil),  // 0: car.v1.GetCarRequest
-	(*GetCarResponse)(nil), // 1: car.v1.GetCarResponse
+	(*GetCarRequest)(nil),      // 0: car.v1.GetCarRequest
+	(*GetCarResponse)(nil),     // 1: car.v1.GetCarResponse
+	(*GetCarListRequest)(nil),  // 2: car.v1.GetCarListRequest
+	(*GetCarListResponse)(nil), // 3: car.v1.GetCarListResponse
+	(*CarInfo)(nil),            // 4: car.v1.CarInfo
 }
 var file_car_v1_car_proto_depIdxs = []int32{
-	0, // 0: car.v1.Car.GetCar:input_type -> car.v1.GetCarRequest
-	1, // 1: car.v1.Car.GetCar:output_type -> car.v1.GetCarResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	4, // 0: car.v1.GetCarResponse.car:type_name -> car.v1.CarInfo
+	4, // 1: car.v1.GetCarListResponse.Cars:type_name -> car.v1.CarInfo
+	0, // 2: car.v1.Car.GetCar:input_type -> car.v1.GetCarRequest
+	2, // 3: car.v1.Car.GetCarList:input_type -> car.v1.GetCarListRequest
+	1, // 4: car.v1.Car.GetCar:output_type -> car.v1.GetCarResponse
+	3, // 5: car.v1.Car.GetCarList:output_type -> car.v1.GetCarListResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_car_v1_car_proto_init() }
@@ -168,7 +306,7 @@ func file_car_v1_car_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_car_v1_car_proto_rawDesc), len(file_car_v1_car_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

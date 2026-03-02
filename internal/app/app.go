@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/gkarman/demo/internal/config"
@@ -102,16 +104,42 @@ func (a *App) Run(ctx context.Context) error {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	if err := a.serverHttp.Stop(shutdownCtx); err != nil {
-		a.log.Error("serverHttp shutdown failed", "error", err)
-		return err
-	}
-	if err := a.grpcServer.Stop(shutdownCtx); err != nil {
-		a.log.Error("gRPC server shutdown failed", "error", err)
-		return err
+
+	return a.shutdownServers(shutdownCtx)
+}
+
+func (a *App) shutdownServers(ctx context.Context) error {
+
+	var (
+		wg      sync.WaitGroup
+		errCh     = make(chan error, 2)
+		joinedErr error
+	)
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		if err := a.serverHttp.Stop(ctx); err != nil {
+			a.log.Error("serverHttp shutdown failed", "error", err)
+			errCh <- fmt.Errorf("http shutdown: %w", err)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if err := a.grpcServer.Stop(ctx); err != nil {
+			a.log.Error("gRPC server shutdown failed", "error", err)
+			errCh <- fmt.Errorf("gRPC shutdown: %w", err)
+		}
+	}()
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		joinedErr = errors.Join(joinedErr, err)
 	}
 
-	return nil
+	return joinedErr
 }
 
 func initPostgres(parent context.Context, cfg *config.Config) (*pgxpool.Pool, error) {

@@ -16,6 +16,7 @@ import (
 func NewRouter(log *slog.Logger, db *pgxpool.Pool) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger(log))
+	r.Use(middleware.Recovery())
 	registerHomeRoutes(r)
 	registerCarRoutes(r, db)
 	return r

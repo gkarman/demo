@@ -79,6 +79,7 @@ func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) (*gr
 		log,
 		grpcConf,
 		grpc.ChainUnaryInterceptor(
+			grpcinterceptor.Recovery(),
 			grpcinterceptor.Logger(log),
 		),
 	)

@@ -23,10 +23,10 @@ func NewGet(repo car.Repo) *GetService {
 func (s *GetService) Execute(ctx context.Context, req *requestdto.GetCar) (*responsedto.GetCar, error) {
 	c, err := s.repo.GetByID(ctx, req.CarId)
 	if err != nil {
-		return nil, fmt.Errorf(`GetService.handel: %w`, err)
+		return nil, fmt.Errorf("GetService.Execute: %w", err)
 	}
-	resp := &responsedto.GetCar{
+
+	return &responsedto.GetCar{
 		Car: mapper.CarFromDomain(c),
-	}
-	return resp, nil
+	}, nil
 }

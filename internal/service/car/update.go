@@ -21,15 +21,17 @@ func NewUpdate(repo car.Repo) *UpdateService {
 }
 
 func (s *UpdateService) Execute(ctx context.Context, req *requestdto.UpdateCar) (*responsedto.UpdateCar, error) {
+	if req.Name == "" {
+		return nil, car.ErrEmptyName
+	}
+
 	c := car.New(req.CarId, req.Name)
 
 	if err := s.repo.Update(ctx, c); err != nil {
 		return nil, fmt.Errorf("UpdateService.Execute: %w", err)
 	}
 
-	resp := &responsedto.UpdateCar{
+	return &responsedto.UpdateCar{
 		Car: mapper.CarFromDomain(c),
-	}
-
-	return resp, nil
+	}, nil
 }

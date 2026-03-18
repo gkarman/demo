@@ -21,18 +21,18 @@ func NewCreate(repo car.Repo) *CreateService {
 }
 
 func (s *CreateService) Execute(ctx context.Context, req *requestdto.CreateCar) (*responsedto.CreateCar, error) {
+	if req.Name == "" {
+		return nil, car.ErrEmptyName
+	}
+
 	id := uuid.New()
-	name := req.Name
+	c := car.New(id.String(), req.Name)
 
-	c := car.New(id.String(), name)
-	err := s.repo.Save(ctx, c)
-	if err != nil {
-		return nil, fmt.Errorf("failed to save car in CreateService: %w", err)
+	if err := s.repo.Save(ctx, c); err != nil {
+		return nil, fmt.Errorf("CreateService.Execute: %w", err)
 	}
 
-	resp := &responsedto.CreateCar{
+	return &responsedto.CreateCar{
 		ID: c.ID,
-	}
-
-	return resp, nil
+	}, nil
 }

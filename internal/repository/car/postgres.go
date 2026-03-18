@@ -36,7 +36,7 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*car.Car, error) {
 	var c car.Car
 	if err := row.Scan(&c.ID, &c.Name); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, car.ErrNotFound
 		}
 		return nil, err
 	}

@@ -8,6 +8,7 @@ service Car {
   rpc GetCar(GetCarRequest) returns (GetCarResponse) {}
   rpc GetCarList(GetCarListRequest) returns (GetCarListResponse) {}
   rpc CreateCar(CreateCarRequest) returns (CreateCarResponse) {}
+  rpc UpdateCar(UpdateCarRequest) returns (UpdateCarResponse) {}
 }
 
 message GetCarRequest {
@@ -37,4 +38,13 @@ message CreateCarRequest {
 
 message CreateCarResponse {
   string ID = 1;
+}
+
+message UpdateCarRequest {
+  string id = 1;
+  string name = 2;
+}
+
+message UpdateCarResponse {
+  CarInfo car = 1;
 }

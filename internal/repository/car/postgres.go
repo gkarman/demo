@@ -58,3 +58,18 @@ func (r *Repository) Save(ctx context.Context, car *car.Car) error {
 
 	return err
 }
+
+func (r *Repository) Update(ctx context.Context, car *car.Car) error {
+	const q = `
+		UPDATE cars SET name = $2 WHERE id = $1
+	`
+
+	_, err := r.db.Exec(
+		ctx,
+		q,
+		car.ID,
+		car.Name,
+	)
+
+	return err
+}

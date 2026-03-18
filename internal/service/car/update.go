@@ -1,0 +1,35 @@
+package car
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/gkarman/demo/internal/domain/car"
+	"github.com/gkarman/demo/internal/service/car/mapper"
+	"github.com/gkarman/demo/internal/service/car/requestdto"
+	"github.com/gkarman/demo/internal/service/car/responsedto"
+)
+
+type UpdateService struct {
+	repo car.Repo
+}
+
+func NewUpdate(repo car.Repo) *UpdateService {
+	return &UpdateService{
+		repo: repo,
+	}
+}
+
+func (s *UpdateService) Execute(ctx context.Context, req *requestdto.UpdateCar) (*responsedto.UpdateCar, error) {
+	c := car.New(req.CarId, req.Name)
+
+	if err := s.repo.Update(ctx, c); err != nil {
+		return nil, fmt.Errorf("UpdateService.Execute: %w", err)
+	}
+
+	resp := &responsedto.UpdateCar{
+		Car: mapper.CarFromDomain(c),
+	}
+
+	return resp, nil
+}

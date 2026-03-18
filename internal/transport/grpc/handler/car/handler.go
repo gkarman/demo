@@ -13,6 +13,7 @@ type Handler struct {
 	getService    *carservice.GetService
 	listService   *carservice.List
 	createService *carservice.CreateService
+	updateService *carservice.UpdateService
 }
 
 func New(
@@ -20,11 +21,13 @@ func New(
 	getService *carservice.GetService,
 	listService *carservice.List,
 	createService *carservice.CreateService,
+	updateService *carservice.UpdateService,
 ) *Handler {
 	return &Handler{
 		log:           log,
 		getService:    getService,
 		listService:   listService,
 		createService: createService,
+		updateService: updateService,
 	}
 }

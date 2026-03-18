@@ -39,9 +39,13 @@ func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool) {
 	createCarSvc := carservice.NewCreate(repo)
 	createHandler := carhandler.NewCreate(createCarSvc)
 
-	r.Route("/v1", func(r chi.Router) {
+	updateCarSvc := carservice.NewUpdate(repo)
+	updateHandler := carhandler.NewUpdate(updateCarSvc)
+
+	r.Route("api/v1", func(r chi.Router) {
+		r.Post("/cars", createHandler.Handle)
 		r.Get("/cars", listHandler.Handle)
 		r.Get("/cars/{id}", getCarHandler.Handle)
-		r.Post("/cars/create", createHandler.Handle)
+		r.Put("/cars/{id}", updateHandler.Handle)
 	})
 }

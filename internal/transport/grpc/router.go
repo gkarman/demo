@@ -19,7 +19,8 @@ func registerCarService(server *Server, log *slog.Logger, db *pgxpool.Pool) {
 	getSvc := carservice.NewGet(repo)
 	listSvc := carservice.NewList(repo)
 	createSvc := carservice.NewCreate(repo)
+	updateSvc := carservice.NewUpdate(repo)
 
-	handler := carhandler.New(log, getSvc, listSvc, createSvc)
+	handler := carhandler.New(log, getSvc, listSvc, createSvc, updateSvc)
 	carv1.RegisterCarServer(server.Registrar(), handler)
 }

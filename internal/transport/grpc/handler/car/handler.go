@@ -9,15 +9,22 @@ import (
 
 type Handler struct {
 	grpcCarv1.UnimplementedCarServer
-	log         *slog.Logger
-	getService  *carservice.GetService
-	listService *carservice.List
+	log           *slog.Logger
+	getService    *carservice.GetService
+	listService   *carservice.List
+	createService *carservice.CreateService
 }
 
-func New(log *slog.Logger, getService *carservice.GetService, listService *carservice.List) *Handler {
+func New(
+	log *slog.Logger,
+	getService *carservice.GetService,
+	listService *carservice.List,
+	createService *carservice.CreateService,
+) *Handler {
 	return &Handler{
-		log:         log,
-		getService:  getService,
-		listService: listService,
+		log:           log,
+		getService:    getService,
+		listService:   listService,
+		createService: createService,
 	}
 }

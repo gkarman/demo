@@ -44,3 +44,17 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*car.Car, error) {
 	return &c, nil
 }
 
+func (r *Repository) Save(ctx context.Context, car *car.Car) error {
+	const q = `
+		INSERT INTO cars (id, name) VALUES ($1, $2)
+	`
+
+	_, err := r.db.Exec(
+		ctx,
+		q,
+		car.ID,
+		car.Name,
+	)
+
+	return err
+}

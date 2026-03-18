@@ -1,0 +1,8 @@
+### Домашняя страница
+GET http://localhost:8080/
+
+### Список машин
+GET http://localhost:8080/v1/cars
+
+### Машина по ID
+GET http://localhost:8080/v1/cars/1

@@ -1,5 +1,5 @@
 package responsedto
 
 type GetList struct {
-	Cars []*Car
+	Cars []*Car `json:"cars"`
 }

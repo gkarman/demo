@@ -21,6 +21,6 @@ func (h *Handler) CreateCar(ctx context.Context, req *carv1.CreateCarRequest) (*
 	}
 
 	return &carv1.CreateCarResponse{
-		ID: respDto.ID,
+		Id: respDto.ID,
 	}, nil
 }

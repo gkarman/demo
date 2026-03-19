@@ -1,5 +1,5 @@
 package responsedto
 
 type UpdateCar struct {
-	Car *Car
+	Car *Car `json:"car"`
 }

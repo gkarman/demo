@@ -20,8 +20,33 @@ func New(db *pgxpool.Pool) *Repository {
 	}
 }
 
-func (r *Repository) List(ctx context.Context) ([]*car.Car, error){
-	return []*car.Car{}, nil
+func (r *Repository) List(ctx context.Context) ([]*car.Car, error) {
+	const q = `
+		SELECT id, name
+		FROM cars
+	`
+
+	rows, err := r.db.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	carList := make([]*car.Car, 0)
+	for rows.Next() {
+		var c car.Car
+		if err := rows.Scan(&c.ID, &c.Name); err != nil {
+			return nil, err
+		}
+		carList = append(carList, &c)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return carList, nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, id string) (*car.Car, error) {
@@ -72,4 +97,21 @@ func (r *Repository) Update(ctx context.Context, car *car.Car) error {
 	)
 
 	return err
+}
+
+func (r *Repository) Delete(ctx context.Context, id string) error {
+	const q = `
+		DELETE FROM cars WHERE id = $1
+	`
+
+	result, err := r.db.Exec(ctx, q, id)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return car.ErrNotFound
+	}
+
+	return nil
 }

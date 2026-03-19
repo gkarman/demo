@@ -14,6 +14,7 @@ type Handler struct {
 	listService   *carservice.List
 	createService *carservice.CreateService
 	updateService *carservice.UpdateService
+	deleteService *carservice.DeleteService
 }
 
 func New(
@@ -22,6 +23,7 @@ func New(
 	listService *carservice.List,
 	createService *carservice.CreateService,
 	updateService *carservice.UpdateService,
+	deleteService *carservice.DeleteService,
 ) *Handler {
 	return &Handler{
 		log:           log,
@@ -29,5 +31,6 @@ func New(
 		listService:   listService,
 		createService: createService,
 		updateService: updateService,
+		deleteService: deleteService,
 	}
 }

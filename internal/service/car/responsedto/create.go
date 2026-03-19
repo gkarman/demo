@@ -1,5 +1,5 @@
 package responsedto
 
 type CreateCar struct {
-	ID string `json:"ID"`
+	ID string `json:"id"`
 }

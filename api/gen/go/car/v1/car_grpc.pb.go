@@ -23,6 +23,7 @@ const (
 	Car_GetCarList_FullMethodName = "/car.v1.Car/GetCarList"
 	Car_CreateCar_FullMethodName  = "/car.v1.Car/CreateCar"
 	Car_UpdateCar_FullMethodName  = "/car.v1.Car/UpdateCar"
+	Car_DeleteCar_FullMethodName  = "/car.v1.Car/DeleteCar"
 )
 
 // CarClient is the client API for Car service.
@@ -33,6 +34,7 @@ type CarClient interface {
 	GetCarList(ctx context.Context, in *GetCarListRequest, opts ...grpc.CallOption) (*GetCarListResponse, error)
 	CreateCar(ctx context.Context, in *CreateCarRequest, opts ...grpc.CallOption) (*CreateCarResponse, error)
 	UpdateCar(ctx context.Context, in *UpdateCarRequest, opts ...grpc.CallOption) (*UpdateCarResponse, error)
+	DeleteCar(ctx context.Context, in *DeleteCarRequest, opts ...grpc.CallOption) (*DeleteCarResponse, error)
 }
 
 type carClient struct {
@@ -83,6 +85,16 @@ func (c *carClient) UpdateCar(ctx context.Context, in *UpdateCarRequest, opts ..
 	return out, nil
 }
 
+func (c *carClient) DeleteCar(ctx context.Context, in *DeleteCarRequest, opts ...grpc.CallOption) (*DeleteCarResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteCarResponse)
+	err := c.cc.Invoke(ctx, Car_DeleteCar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CarServer is the server API for Car service.
 // All implementations must embed UnimplementedCarServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type CarServer interface {
 	GetCarList(context.Context, *GetCarListRequest) (*GetCarListResponse, error)
 	CreateCar(context.Context, *CreateCarRequest) (*CreateCarResponse, error)
 	UpdateCar(context.Context, *UpdateCarRequest) (*UpdateCarResponse, error)
+	DeleteCar(context.Context, *DeleteCarRequest) (*DeleteCarResponse, error)
 	mustEmbedUnimplementedCarServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedCarServer) CreateCar(context.Context, *CreateCarRequest) (*Cr
 }
 func (UnimplementedCarServer) UpdateCar(context.Context, *UpdateCarRequest) (*UpdateCarResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateCar not implemented")
+}
+func (UnimplementedCarServer) DeleteCar(context.Context, *DeleteCarRequest) (*DeleteCarResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteCar not implemented")
 }
 func (UnimplementedCarServer) mustEmbedUnimplementedCarServer() {}
 func (UnimplementedCarServer) testEmbeddedByValue()             {}
@@ -206,6 +222,24 @@ func _Car_UpdateCar_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Car_DeleteCar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CarServer).DeleteCar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Car_DeleteCar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CarServer).DeleteCar(ctx, req.(*DeleteCarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Car_ServiceDesc is the grpc.ServiceDesc for Car service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var Car_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateCar",
 			Handler:    _Car_UpdateCar_Handler,
+		},
+		{
+			MethodName: "DeleteCar",
+			Handler:    _Car_DeleteCar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

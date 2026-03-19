@@ -42,10 +42,14 @@ func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool) {
 	updateCarSvc := carservice.NewUpdate(repo)
 	updateHandler := carhandler.NewUpdate(updateCarSvc)
 
-	r.Route("api/v1", func(r chi.Router) {
+	deleteCarSvc := carservice.NewDelete(repo)
+	deleteHandler := carhandler.NewDelete(deleteCarSvc)
+
+	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/cars", createHandler.Handle)
 		r.Get("/cars", listHandler.Handle)
 		r.Get("/cars/{id}", getCarHandler.Handle)
 		r.Put("/cars/{id}", updateHandler.Handle)
+		r.Delete("/cars/{id}", deleteHandler.Handle)
 	})
 }

@@ -9,6 +9,7 @@ service Car {
   rpc GetCarList(GetCarListRequest) returns (GetCarListResponse) {}
   rpc CreateCar(CreateCarRequest) returns (CreateCarResponse) {}
   rpc UpdateCar(UpdateCarRequest) returns (UpdateCarResponse) {}
+  rpc DeleteCar(DeleteCarRequest) returns (DeleteCarResponse) {}
 }
 
 message GetCarRequest {
@@ -24,7 +25,7 @@ message GetCarListRequest {
 }
 
 message GetCarListResponse {
-  repeated CarInfo Cars = 1;
+  repeated CarInfo cars = 1;
 }
 
 message CarInfo {
@@ -37,7 +38,7 @@ message CreateCarRequest {
 }
 
 message CreateCarResponse {
-  string ID = 1;
+  string id = 1;
 }
 
 message UpdateCarRequest {
@@ -48,3 +49,9 @@ message UpdateCarRequest {
 message UpdateCarResponse {
   CarInfo car = 1;
 }
+
+message DeleteCarRequest {
+  string id = 1;
+}
+
+message DeleteCarResponse {}

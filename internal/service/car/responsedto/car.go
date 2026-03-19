@@ -1,6 +1,6 @@
 package responsedto
 
 type Car struct {
-	ID   string `json:"ID"`
-	Name string `json:"Name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

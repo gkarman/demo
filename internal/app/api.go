@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/gkarman/demo/internal/config"
-	"github.com/gkarman/demo/internal/db"
-	"github.com/gkarman/demo/internal/logger"
 	grpcTransport "github.com/gkarman/demo/internal/transport/grpc"
 	grpcinterceptor "github.com/gkarman/demo/internal/transport/grpc/interceptor"
 	httpTransport "github.com/gkarman/demo/internal/transport/http"
@@ -52,12 +50,6 @@ func New(ctx context.Context) (*App, error) {
 		serverHttp: serverHttp,
 		grpcServer: serverGrpc,
 	}, nil
-}
-
-func initLogger(cfg *config.Config) *slog.Logger {
-	log := logger.New(logger.Config{Level: cfg.Logger.Level})
-	slog.SetDefault(log)
-	return log
 }
 
 func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) *httpTransport.Server {
@@ -111,8 +103,8 @@ func (a *App) Run(ctx context.Context) error {
 func (a *App) shutdownServers(ctx context.Context) error {
 
 	var (
-		wg      sync.WaitGroup
-		errCh     = make(chan error, 2)
+		wg       sync.WaitGroup
+		errCh    = make(chan error, 2)
 		joinedErr error
 	)
 
@@ -140,17 +132,4 @@ func (a *App) shutdownServers(ctx context.Context) error {
 	}
 
 	return joinedErr
-}
-
-func initPostgres(parent context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
-	ctx, cancel := context.WithTimeout(parent, 10*time.Second)
-	defer cancel()
-
-	return db.NewPool(ctx, db.Config{
-		DSN:             cfg.DB.DSN(),
-		MaxConns:        cfg.DB.MaxConnections,
-		MinConns:        cfg.DB.MinConnections,
-		MaxConnLifetime: time.Duration(cfg.DB.MaxConnectionLifeTimeMinutes) * time.Minute,
-		MaxConnIdleTime: time.Duration(cfg.DB.MaxConnectionIdleTimeMinutes) * time.Minute,
-	})
 }

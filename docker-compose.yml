@@ -12,6 +12,19 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:4.2.4-management
+    container_name: demo-go-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+
   migrate:
     image: migrate/migrate:v4.17.0
     container_name: demo-go-migrate
@@ -34,3 +47,4 @@ services:
 
 volumes:
   db_data:
+  rabbitmq_data:

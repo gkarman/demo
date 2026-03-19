@@ -8,6 +8,7 @@ type Config struct {
 	Logger     LoggerConfig
 	ServerHttp ServerHttpConfig
 	ServerGRPC ServerGRPCConfig
+	RabbitMQ   RabbitMQConfig
 }
 
 type DBConfig struct {
@@ -40,4 +41,11 @@ type ServerHttpConfig struct {
 
 type ServerGRPCConfig struct {
 	Addr string `env:"SERVER_GRPC_ADDR" env-default:"localhost:5051"`
+}
+
+type RabbitMQConfig struct {
+	User string `env:"RABBITMQ_USER" env-default:"guest"`
+	Password string `env:"RABBITMQ_PASS" env-default:"guest"`
+	Host string `env:"RABBITMQ_HOST" env-default:"localhost"`
+	Port string `env:"RABBITMQ_PORT" env-default:"5672"`
 }

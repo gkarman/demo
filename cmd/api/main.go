@@ -18,7 +18,7 @@ func main() {
 	)
 	defer stop()
 
-	a, err := app.New(ctx)
+	a, err := app.NewApi(ctx)
 	if err != nil {
 		slog.Error("application build failed", "error", err)
 		os.Exit(1)

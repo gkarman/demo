@@ -8,7 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gkarman/demo/internal/app/events"
 	"github.com/gkarman/demo/internal/config"
+	"github.com/gkarman/demo/internal/infrastructure/eventbus"
 	grpcTransport "github.com/gkarman/demo/internal/transport/grpc"
 	grpcinterceptor "github.com/gkarman/demo/internal/transport/grpc/interceptor"
 	httpTransport "github.com/gkarman/demo/internal/transport/http"
@@ -16,14 +18,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-type App struct {
+type Api struct {
 	log        *slog.Logger
 	db         *pgxpool.Pool
 	serverHttp *httpTransport.Server
 	grpcServer *grpcTransport.Server
 }
 
-func New(ctx context.Context) (*App, error) {
+func NewApi(ctx context.Context) (*Api, error) {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
@@ -38,13 +40,16 @@ func New(ctx context.Context) (*App, error) {
 	}
 	log.Info("database connected")
 
-	serverHttp := initHTTPServer(log, postgresDB, cfg)
-	serverGrpc, err := initGRPCServer(log, postgresDB, cfg)
+	bus := eventbus.New()
+	events.RegisterEventHandlers(bus, log)
+
+	serverHttp := initHTTPServer(log, postgresDB, cfg, bus)
+	serverGrpc, err := initGRPCServer(log, postgresDB, cfg, bus)
 	if err != nil {
 		return nil, fmt.Errorf("create gRPC server: %w", err)
 	}
 
-	return &App{
+	return &Api{
 		log:        log,
 		db:         postgresDB,
 		serverHttp: serverHttp,
@@ -52,8 +57,8 @@ func New(ctx context.Context) (*App, error) {
 	}, nil
 }
 
-func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) *httpTransport.Server {
-	router := httpTransport.NewRouter(log, db)
+func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, bus *eventbus.EventBus) *httpTransport.Server {
+	router := httpTransport.NewRouter(log, db, bus)
 	return httpTransport.NewServer(
 		log,
 		router,
@@ -65,7 +70,7 @@ func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) *htt
 	)
 }
 
-func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) (*grpcTransport.Server, error) {
+func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, bus *eventbus.EventBus) (*grpcTransport.Server, error) {
 	grpcConf := grpcTransport.Config{
 		Addr: cfg.ServerGRPC.Addr,
 	}
@@ -80,12 +85,12 @@ func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config) (*gr
 	if err != nil {
 		return nil, fmt.Errorf("create gRPC server with interceptors: %w", err)
 	}
-	grpcTransport.RegisterServices(grpcServer, log, db)
+	grpcTransport.RegisterServices(grpcServer, log, db, bus)
 
 	return grpcServer, nil
 }
 
-func (a *App) Run(ctx context.Context) error {
+func (a *Api) Run(ctx context.Context) error {
 	defer a.db.Close()
 	a.serverHttp.Start()
 	a.grpcServer.Start()
@@ -100,11 +105,11 @@ func (a *App) Run(ctx context.Context) error {
 	return a.shutdownServers(shutdownCtx)
 }
 
-func (a *App) shutdownServers(ctx context.Context) error {
+func (a *Api) shutdownServers(ctx context.Context) error {
 
 	var (
-		wg       sync.WaitGroup
-		errCh    = make(chan error, 2)
+		wg        sync.WaitGroup
+		errCh     = make(chan error, 2)
 		joinedErr error
 	)
 

@@ -3,6 +3,7 @@ package http
 import (
 	"log/slog"
 
+	"github.com/gkarman/demo/internal/infrastructure/eventbus"
 	"github.com/gkarman/demo/internal/repository/car"
 	carservice "github.com/gkarman/demo/internal/service/car"
 	carhandler "github.com/gkarman/demo/internal/transport/http/handler/car"
@@ -13,12 +14,12 @@ import (
 	"github.com/gkarman/demo/internal/transport/http/handler"
 )
 
-func NewRouter(log *slog.Logger, db *pgxpool.Pool) *chi.Mux {
+func NewRouter(log *slog.Logger, db *pgxpool.Pool, bus *eventbus.EventBus) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger(log))
 	r.Use(middleware.Recovery())
 	registerHomeRoutes(r)
-	registerCarRoutes(r, db)
+	registerCarRoutes(r, db, bus)
 	return r
 }
 
@@ -27,7 +28,7 @@ func registerHomeRoutes(r *chi.Mux) {
 	r.Get("/", homeHandler.Home)
 }
 
-func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool) {
+func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool, bus *eventbus.EventBus) {
 	repo := car.New(db)
 
 	listSvc := carservice.NewList(repo)
@@ -36,7 +37,7 @@ func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool) {
 	getCarSvc := carservice.NewGet(repo)
 	getCarHandler := carhandler.NewGetCarHandler(getCarSvc)
 
-	createCarSvc := carservice.NewCreate(repo)
+	createCarSvc := carservice.NewCreate(repo, bus)
 	createHandler := carhandler.NewCreate(createCarSvc)
 
 	updateCarSvc := carservice.NewUpdate(repo)

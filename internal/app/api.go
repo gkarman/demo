@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gkarman/demo/internal/app/events"
 	"github.com/gkarman/demo/internal/config"
 	"github.com/gkarman/demo/internal/infrastructure/dispatcher"
+	"github.com/gkarman/demo/internal/infrastructure/events"
 	"github.com/gkarman/demo/internal/infrastructure/mq"
-	grpcTransport "github.com/gkarman/demo/internal/transport/grpc"
-	grpcinterceptor "github.com/gkarman/demo/internal/transport/grpc/interceptor"
-	httpTransport "github.com/gkarman/demo/internal/transport/http"
+	grpc2 "github.com/gkarman/demo/internal/infrastructure/transport/grpc"
+	"github.com/gkarman/demo/internal/infrastructure/transport/grpc/interceptor"
+	"github.com/gkarman/demo/internal/infrastructure/transport/http"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 )
@@ -22,8 +22,8 @@ import (
 type Api struct {
 	log        *slog.Logger
 	db         *pgxpool.Pool
-	serverHttp *httpTransport.Server
-	grpcServer *grpcTransport.Server
+	serverHttp *http.Server
+	grpcServer *grpc2.Server
 	rabbit     *mq.RabbitPublisher
 }
 
@@ -68,12 +68,12 @@ func NewApi(ctx context.Context) (*Api, error) {
 	}, nil
 }
 
-func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *dispatcher.Dispatcher) *httpTransport.Server {
-	router := httpTransport.NewRouter(log, db, d)
-	return httpTransport.NewServer(
+func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *dispatcher.Dispatcher) *http.Server {
+	router := http.NewRouter(log, db, d)
+	return http.NewServer(
 		log,
 		router,
-		httpTransport.Config{
+		http.Config{
 			Addr:         cfg.ServerHttp.Addr,
 			ReadTimeout:  time.Duration(cfg.ServerHttp.ReadTimeoutSeconds) * time.Second,
 			WriteTimeout: time.Duration(cfg.ServerHttp.WriteTimeoutSeconds) * time.Second,
@@ -81,22 +81,22 @@ func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *d
 	)
 }
 
-func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *dispatcher.Dispatcher) (*grpcTransport.Server, error) {
-	grpcConf := grpcTransport.Config{
+func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *dispatcher.Dispatcher) (*grpc2.Server, error) {
+	grpcConf := grpc2.Config{
 		Addr: cfg.ServerGRPC.Addr,
 	}
-	grpcServer, err := grpcTransport.NewServer(
+	grpcServer, err := grpc2.NewServer(
 		log,
 		grpcConf,
 		grpc.ChainUnaryInterceptor(
-			grpcinterceptor.Recovery(),
-			grpcinterceptor.Logger(log),
+			interceptor.Recovery(),
+			interceptor.Logger(log),
 		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("create gRPC server with interceptors: %w", err)
 	}
-	grpcTransport.RegisterServices(grpcServer, log, db, d)
+	grpc2.RegisterServices(grpcServer, log, db, d)
 
 	return grpcServer, nil
 }

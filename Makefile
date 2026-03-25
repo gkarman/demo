@@ -14,8 +14,8 @@ down:
 run:
 	$(call run_with_env,go run ./cmd/api)
 
-run-worker:
-	$(call run_with_env,go run ./cmd/worker)
+run_worker_notify:
+	$(call run_with_env,go run ./cmd/worker_notify)
 
 lint:
 	$(call run_with_env,golangci-lint run)

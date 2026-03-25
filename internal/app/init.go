@@ -7,8 +7,8 @@ import (
 	"log/slog"
 
 	"github.com/gkarman/demo/internal/config"
-	"github.com/gkarman/demo/internal/db"
-	"github.com/gkarman/demo/internal/logger"
+	"github.com/gkarman/demo/internal/infrastructure/db"
+	"github.com/gkarman/demo/internal/infrastructure/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

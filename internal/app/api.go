@@ -23,8 +23,8 @@ type Api struct {
 	log        *slog.Logger
 	db         *pgxpool.Pool
 	serverHttp *http.Server
-	grpcServer *grpc2.Server
-	rabbit     *mq.RabbitPublisher
+	grpcServer   *grpc2.Server
+	rabbitPusher *mq.RabbitPublisher
 }
 
 func NewApi(ctx context.Context) (*Api, error) {
@@ -42,12 +42,12 @@ func NewApi(ctx context.Context) (*Api, error) {
 	}
 	log.Info("db connected")
 
-	log.Info("rabbit connect...")
+	log.Info("rabbitPusher connect...")
 	rabbitPublisher, err := initRabbitPublisher(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("rabbit init: %w", err)
+		return nil, fmt.Errorf("rabbitPusher init: %w", err)
 	}
-	log.Info("rabbit connected")
+	log.Info("rabbitPusher connected")
 
 	d := dispatcher.New()
 	events.RegisterEventHandlers(d, log, rabbitPublisher)
@@ -60,11 +60,11 @@ func NewApi(ctx context.Context) (*Api, error) {
 	}
 
 	return &Api{
-		log:        log,
-		db:         postgresDB,
-		serverHttp: serverHttp,
-		grpcServer: serverGrpc,
-		rabbit:     rabbitPublisher,
+		log:          log,
+		db:           postgresDB,
+		serverHttp:   serverHttp,
+		grpcServer:   serverGrpc,
+		rabbitPusher: rabbitPublisher,
 	}, nil
 }
 
@@ -103,7 +103,7 @@ func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *d
 
 func (a *Api) Run(ctx context.Context) error {
 	defer a.db.Close()
-	defer a.rabbit.Close()
+	defer a.rabbitPusher.Close()
 	a.serverHttp.Start()
 	a.grpcServer.Start()
 

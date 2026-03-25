@@ -9,14 +9,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Config struct {
-	User           string
-	Password       string
-	Host           string
-	Port           string
-	Exchange       string
-	ReconnectDelay time.Duration
-}
 
 type RabbitPublisher struct {
 	cfg    Config

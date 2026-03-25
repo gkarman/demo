@@ -10,7 +10,7 @@ import (
 	"github.com/gkarman/demo/internal/infrastructure/mq"
 )
 
-func CarCreatedRabbitHandler(publisher mq.Publisher, log *slog.Logger) func(ctx context.Context, e any) {
+func CarCreatedToRabbitHandler(publisher mq.Publisher, log *slog.Logger) func(ctx context.Context, e any) {
 
 	return func(ctx context.Context, e any) {
 		event, ok := e.(*carevents.CarCreated)
@@ -22,7 +22,7 @@ func CarCreatedRabbitHandler(publisher mq.Publisher, log *slog.Logger) func(ctx 
 		msg := mappers.MapCarCreated(event)
 		body, err := json.Marshal(msg)
 		if err != nil {
-			log.Error("marshal failed in CarCreatedRabbitHandler", "err", err)
+			log.Error("marshal failed in CarCreatedToRabbitHandler", "err", err)
 			return
 		}
 

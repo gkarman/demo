@@ -2,22 +2,24 @@ package handlers
 
 import (
 	"context"
+	"log/slog"
 
 	carevents "github.com/gkarman/demo/internal/domain/car/events"
-	"github.com/gkarman/demo/internal/logger"
 )
 
-type СarCreatedLogHandler struct {
-}
+func CarCreatedLogHandler(log *slog.Logger) func(ctx context.Context, e any) {
+	return func(ctx context.Context, e any) {
 
-func NewCarCreatedLogHandler() *СarCreatedLogHandler {
-	return &СarCreatedLogHandler{}
-}
+		event, ok := e.(*carevents.CarCreated)
+		if !ok {
+			log.Error("invalid event type for car.created")
+			return
+		}
 
-func (h *СarCreatedLogHandler) Handle(ctx context.Context, e *carevents.CarCreated) {
-	log := logger.FromContext(ctx)
-	log.Info("car created",
-		"id", e.ID,
-		"name", e.Name,
-	)
+		log.Info("car created",
+			"id", event.ID,
+			"name", event.Name,
+			"event_id", event.EventID(),
+		)
+	}
 }

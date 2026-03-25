@@ -48,4 +48,7 @@ type RabbitMQConfig struct {
 	Password string `env:"RABBITMQ_PASS" env-default:"guest"`
 	Host string `env:"RABBITMQ_HOST" env-default:"localhost"`
 	Port string `env:"RABBITMQ_PORT" env-default:"5672"`
+	Exchange string `env:"RABBITMQ_EXCHANGE" env-default:"5672"`
+	PoolSize int `env:"RABBITMQ_POOL_SIZE" env-default:"10"`
+	ReconnectDelay int `env:"RABBITMQ_RECONNECT_DELAY_IN_SECONDS" env-default:"3"`
 }

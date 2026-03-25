@@ -5,21 +5,21 @@ import (
 	"fmt"
 
 	"github.com/gkarman/demo/internal/domain/car"
-	"github.com/gkarman/demo/internal/infrastructure/eventbus"
+	"github.com/gkarman/demo/internal/service"
 	"github.com/gkarman/demo/internal/service/car/requestdto"
 	"github.com/gkarman/demo/internal/service/car/responsedto"
 	"github.com/google/uuid"
 )
 
 type CreateService struct {
-	repo     car.Repo
-	eventBus *eventbus.EventBus
+	repo       car.Repo
+	dispatcher service.Dispatcher
 }
 
-func NewCreate(repo car.Repo, bus *eventbus.EventBus) *CreateService {
+func NewCreate(repo car.Repo, dispatcher service.Dispatcher) *CreateService {
 	return &CreateService{
-		repo:     repo,
-		eventBus: bus,
+		repo:       repo,
+		dispatcher: dispatcher,
 	}
 }
 
@@ -35,9 +35,8 @@ func (s *CreateService) Execute(ctx context.Context, req *requestdto.CreateCar) 
 		return nil, fmt.Errorf("CreateService.Execute: %w", err)
 	}
 
-	for _, event := range c.PullEvents() {
-		s.eventBus.Publish(ctx, event)
-	}
+	events := c.PullEvents()
+	s.dispatcher.Dispatch(ctx, events)
 
 	return &responsedto.CreateCar{
 		ID: c.ID,

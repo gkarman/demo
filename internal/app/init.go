@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"log/slog"
+
 	"github.com/gkarman/demo/internal/config"
 	"github.com/gkarman/demo/internal/db"
 	"github.com/gkarman/demo/internal/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
 )
 
 func initLogger(cfg *config.Config) *slog.Logger {

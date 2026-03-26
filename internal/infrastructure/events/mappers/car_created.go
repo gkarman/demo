@@ -7,7 +7,7 @@ import (
 
 func MapCarCreated(e *carevents.CarCreated) contracts.CarCreatedV1 {
 	return contracts.CarCreatedV1{
-		EventType:  "car.created",
+		EventType:  contracts.EventCarCreatedV1,
 		EventID:    e.EventID(),
 		CarID:      e.ID,
 		Name:       e.Name,

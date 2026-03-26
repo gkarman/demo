@@ -7,6 +7,7 @@ import (
 
 	"github.com/gkarman/demo/internal/application"
 	carevents "github.com/gkarman/demo/internal/domain/car/events"
+	"github.com/gkarman/demo/internal/infrastructure/contracts/events"
 	"github.com/gkarman/demo/internal/infrastructure/events/mappers"
 )
 
@@ -26,7 +27,7 @@ func CarCreatedToRabbitHandler(publisher application.Publisher, log *slog.Logger
 			return
 		}
 
-		err = publisher.Publish(ctx, "car.created.v1", body)
+		err = publisher.Publish(ctx, events.EventCarCreatedV1, body)
 		if err != nil {
 			log.Error("failed to publish to rabbitmq", "err", err)
 			return

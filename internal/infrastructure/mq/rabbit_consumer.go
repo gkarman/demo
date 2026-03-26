@@ -15,13 +15,7 @@ type RabbitConsumer struct {
 }
 
 func NewRabbitConsumer(cfg Config, queue string) (*RabbitConsumer, error) {
-	dsn := fmt.Sprintf(
-		"amqp://%s:%s@%s:%s/",
-		cfg.User,
-		cfg.Password,
-		cfg.Host,
-		cfg.Port,
-	)
+	dsn := fmt.Sprintf("amqp://%s:%s@%s:%s/", cfg.User, cfg.Password, cfg.Host, cfg.Port)
 
 	conn, err := amqp.Dial(dsn)
 	if err != nil {

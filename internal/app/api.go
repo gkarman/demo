@@ -13,16 +13,15 @@ import (
 	"github.com/gkarman/demo/internal/infrastructure/events"
 	"github.com/gkarman/demo/internal/infrastructure/mq"
 	grpc2 "github.com/gkarman/demo/internal/infrastructure/transport/grpc"
-	"github.com/gkarman/demo/internal/infrastructure/transport/grpc/interceptor"
 	"github.com/gkarman/demo/internal/infrastructure/transport/http"
+	"github.com/gkarman/demo/internal/platform"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
 )
 
 type Api struct {
-	log        *slog.Logger
-	db         *pgxpool.Pool
-	serverHttp *http.Server
+	log          *slog.Logger
+	db           *pgxpool.Pool
+	serverHttp   *http.Server
 	grpcServer   *grpc2.Server
 	rabbitPusher *mq.RabbitPublisher
 }
@@ -33,17 +32,17 @@ func NewApi(ctx context.Context) (*Api, error) {
 		return nil, fmt.Errorf("load config: %w", err)
 	}
 
-	log := initLogger(cfg)
+	log := platform.NewLogger(cfg)
 
 	log.Info("db connect...")
-	postgresDB, err := initPostgres(ctx, cfg)
+	postgresDB, err := platform.NewPostgres(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("connect to postgresDB: %w", err)
 	}
 	log.Info("db connected")
 
 	log.Info("rabbitPusher connect...")
-	rabbitPublisher, err := initRabbitPublisher(cfg)
+	rabbitPublisher, err := platform.NewRabbitPublisher(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("rabbitPusher init: %w", err)
 	}
@@ -52,8 +51,8 @@ func NewApi(ctx context.Context) (*Api, error) {
 	d := dispatcher.New()
 	events.RegisterEventHandlers(d, log, rabbitPublisher)
 
-	serverHttp := initHTTPServer(log, postgresDB, cfg, d)
-	serverGrpc, err := initGRPCServer(log, postgresDB, cfg, d)
+	serverHttp := platform.NewHTTPServer(log, postgresDB, cfg, d)
+	serverGrpc, err := platform.NewGRPCServer(log, postgresDB, cfg, d)
 	if err != nil {
 		rabbitPublisher.Close()
 		return nil, fmt.Errorf("create gRPC server: %w", err)
@@ -66,39 +65,6 @@ func NewApi(ctx context.Context) (*Api, error) {
 		grpcServer:   serverGrpc,
 		rabbitPusher: rabbitPublisher,
 	}, nil
-}
-
-func initHTTPServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *dispatcher.Dispatcher) *http.Server {
-	router := http.NewRouter(log, db, d)
-	return http.NewServer(
-		log,
-		router,
-		http.Config{
-			Addr:         cfg.ServerHttp.Addr,
-			ReadTimeout:  time.Duration(cfg.ServerHttp.ReadTimeoutSeconds) * time.Second,
-			WriteTimeout: time.Duration(cfg.ServerHttp.WriteTimeoutSeconds) * time.Second,
-		},
-	)
-}
-
-func initGRPCServer(log *slog.Logger, db *pgxpool.Pool, cfg *config.Config, d *dispatcher.Dispatcher) (*grpc2.Server, error) {
-	grpcConf := grpc2.Config{
-		Addr: cfg.ServerGRPC.Addr,
-	}
-	grpcServer, err := grpc2.NewServer(
-		log,
-		grpcConf,
-		grpc.ChainUnaryInterceptor(
-			interceptor.Recovery(),
-			interceptor.Logger(log),
-		),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("create gRPC server with interceptors: %w", err)
-	}
-	grpc2.RegisterServices(grpcServer, log, db, d)
-
-	return grpcServer, nil
 }
 
 func (a *Api) Run(ctx context.Context) error {
@@ -149,22 +115,4 @@ func (a *Api) shutdownServers(ctx context.Context) error {
 	}
 
 	return joinedErr
-}
-
-func initRabbitPublisher(cfg *config.Config) (*mq.RabbitPublisher, error) {
-	configRabbit := mq.Config{
-		User:           cfg.RabbitMQ.User,
-		Password:       cfg.RabbitMQ.Password,
-		Host:           cfg.RabbitMQ.Host,
-		Port:           cfg.RabbitMQ.Port,
-		Exchange:       cfg.RabbitMQ.Exchange,
-		ReconnectDelay: time.Duration(cfg.RabbitMQ.ReconnectDelay) * time.Second,
-	}
-
-	publisher, err := mq.NewRabbitPublisher(configRabbit)
-	if err != nil {
-		return nil, err
-	}
-
-	return publisher, nil
 }

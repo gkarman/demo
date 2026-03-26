@@ -3,10 +3,9 @@ package app
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/gkarman/demo/internal/config"
-	"github.com/gkarman/demo/internal/infrastructure/mq"
+	"github.com/gkarman/demo/internal/platform"
 	"github.com/gkarman/demo/internal/worker/notify"
 )
 
@@ -16,17 +15,17 @@ func NewWorkerNotify(ctx context.Context) (*notify.Worker, error) {
 		return nil, err
 	}
 
-	log := initLogger(cfg)
+	log := platform.NewLogger(cfg)
 
 	log.Info("db connect...")
-	db, err := initPostgres(ctx, cfg)
+	db, err := platform.NewPostgres(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("connect to postgres: %w", err)
 	}
 	log.Info("db connected")
 
 	log.Info("rabbit consumer connect...")
-	consumer, err := initRabbitConsumer(cfg)
+	consumer, err := platform.NewRabbitConsumer(cfg)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("init rabbit consumer: %w", err)
@@ -37,17 +36,4 @@ func NewWorkerNotify(ctx context.Context) (*notify.Worker, error) {
 	worker := notify.New(log, consumer, router)
 
 	return worker, nil
-}
-
-func initRabbitConsumer(cfg *config.Config) (*mq.RabbitConsumer, error) {
-	configRabbit := mq.Config{
-		User:           cfg.RabbitMQ.User,
-		Password:       cfg.RabbitMQ.Password,
-		Host:           cfg.RabbitMQ.Host,
-		Port:           cfg.RabbitMQ.Port,
-		Exchange:       cfg.RabbitMQ.Exchange,
-		ReconnectDelay: time.Duration(cfg.RabbitMQ.ReconnectDelay) * time.Second,
-	}
-
-	return mq.NewRabbitConsumer(configRabbit, "notify_queue")
 }

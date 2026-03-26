@@ -14,6 +14,7 @@ type RabbitConsumer struct {
 	queue    string
 	bindings []string
 	log      *slog.Logger
+	backoff time.Duration
 }
 
 func NewRabbitConsumer(cfg Config, queue string, bindings []string, log *slog.Logger) *RabbitConsumer {
@@ -22,6 +23,7 @@ func NewRabbitConsumer(cfg Config, queue string, bindings []string, log *slog.Lo
 		queue:    queue,
 		bindings: bindings,
 		log:      log,
+		backoff:  time.Second,
 	}
 }
 
@@ -31,16 +33,23 @@ func (c *RabbitConsumer) Consume(ctx context.Context, handler func([]byte) error
 
 		err := c.consumeOnce(ctx, handler)
 		if err != nil {
-			c.log.Error("consume iteration failed", "error", err)
+			wait := c.nextBackoff()
+
+			c.log.Error("consume failed, will retry",
+				"error", err,
+				"retry_in", wait,
+			)
+
+			select {
+			case <-time.After(wait):
+				continue
+			case <-ctx.Done():
+				c.log.Info("consumer stopped by context")
+				return ctx.Err()
+			}
 		}
 
-		select {
-		case <-time.After(c.cfg.ReconnectDelay):
-			c.log.Warn("reconnecting rabbit consumer...")
-		case <-ctx.Done():
-			c.log.Info("consumer stopped by context")
-			return ctx.Err()
-		}
+		return nil
 	}
 }
 
@@ -61,6 +70,7 @@ func (c *RabbitConsumer) consumeOnce(ctx context.Context, handler func([]byte) e
 	defer conn.Close()
 
 	c.log.Info("rabbit connected")
+	c.resetBackoff()
 
 	ch, err := conn.Channel()
 	if err != nil {
@@ -142,4 +152,21 @@ func (c *RabbitConsumer) consumeOnce(ctx context.Context, handler func([]byte) e
 			return ctx.Err()
 		}
 	}
+}
+
+func (c *RabbitConsumer) nextBackoff() time.Duration {
+	max := 30 * time.Second
+
+	d := c.backoff
+	c.backoff *= 2
+
+	if c.backoff > max {
+		c.backoff = max
+	}
+
+	return d
+}
+
+func (c *RabbitConsumer) resetBackoff() {
+	c.backoff = time.Second
 }

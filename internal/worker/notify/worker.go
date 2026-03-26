@@ -24,8 +24,6 @@ func New(log *slog.Logger, consumer *mq.RabbitConsumer, router *Router) *Worker 
 }
 
 func (w *Worker) Run(ctx context.Context) error {
-	defer w.consumer.Close()
-
 	w.log.Info("worker_notify started")
 
 	go func() {

@@ -25,7 +25,7 @@ func NewWorkerNotify(ctx context.Context) (*notify.Worker, error) {
 	log.Info("db connected")
 
 	log.Info("rabbit consumer connect...")
-	consumer, err := platform.NewRabbitConsumer(cfg)
+	consumer, err := platform.NewRabbitConsumer(cfg, log)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("init rabbit consumer: %w", err)

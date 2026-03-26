@@ -3,33 +3,79 @@ package mq
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type RabbitConsumer struct {
-	conn *amqp.Connection
-	ch   *amqp.Channel
-
-	queue string
+	cfg      Config
+	queue    string
+	bindings []string
+	log      *slog.Logger
 }
 
-func NewRabbitConsumer(cfg Config, queue string, bindings []string) (*RabbitConsumer, error) {
-	dsn := fmt.Sprintf("amqp://%s:%s@%s:%s/", cfg.User, cfg.Password, cfg.Host, cfg.Port)
+func NewRabbitConsumer(cfg Config, queue string, bindings []string, log *slog.Logger) *RabbitConsumer {
+	return &RabbitConsumer{
+		cfg:      cfg,
+		queue:    queue,
+		bindings: bindings,
+		log:      log,
+	}
+}
+
+func (c *RabbitConsumer) Consume(ctx context.Context, handler func([]byte) error) error {
+	for {
+		c.log.Info("rabbit consume loop start")
+
+		err := c.consumeOnce(ctx, handler)
+		if err != nil {
+			c.log.Error("consume iteration failed", "error", err)
+		}
+
+		select {
+		case <-time.After(c.cfg.ReconnectDelay):
+			c.log.Warn("reconnecting rabbit consumer...")
+		case <-ctx.Done():
+			c.log.Info("consumer stopped by context")
+			return ctx.Err()
+		}
+	}
+}
+
+func (c *RabbitConsumer) consumeOnce(ctx context.Context, handler func([]byte) error) error {
+	dsn := fmt.Sprintf("amqp://%s:%s@%s:%s/",
+		c.cfg.User,
+		c.cfg.Password,
+		c.cfg.Host,
+		c.cfg.Port,
+	)
+
+	c.log.Info("dial rabbit")
 
 	conn, err := amqp.Dial(dsn)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("dial: %w", err)
 	}
+	defer conn.Close()
+
+	c.log.Info("rabbit connected")
 
 	ch, err := conn.Channel()
 	if err != nil {
-		conn.Close()
-		return nil, err
+		return fmt.Errorf("channel: %w", err)
+	}
+	defer ch.Close()
+
+	if err := ch.Qos(1, 0, false); err != nil {
+		return fmt.Errorf("qos: %w", err)
 	}
 
+	c.log.Info("declare queue", "queue", c.queue)
+
 	_, err = ch.QueueDeclare(
-		queue,
+		c.queue,
 		true,
 		false,
 		false,
@@ -37,33 +83,24 @@ func NewRabbitConsumer(cfg Config, queue string, bindings []string) (*RabbitCons
 		nil,
 	)
 	if err != nil {
-		conn.Close()
-		return nil, err
+		return fmt.Errorf("queue declare: %w", err)
 	}
 
-	for _, key := range bindings {
-		err = ch.QueueBind(
-			queue,
+	for _, key := range c.bindings {
+		c.log.Info("bind queue", "key", key)
+
+		if err := ch.QueueBind(
+			c.queue,
 			key,
-			cfg.Exchange,
+			c.cfg.Exchange,
 			false,
 			nil,
-		)
-		if err != nil {
-			conn.Close()
-			return nil, err
+		); err != nil {
+			return fmt.Errorf("bind: %w", err)
 		}
 	}
 
-	return &RabbitConsumer{
-		conn:  conn,
-		ch:    ch,
-		queue: queue,
-	}, nil
-}
-
-func (c *RabbitConsumer) Consume(ctx context.Context, handler func([]byte) error) error {
-	msgs, err := c.ch.Consume(
+	msgs, err := ch.Consume(
 		c.queue,
 		"",
 		false,
@@ -73,30 +110,36 @@ func (c *RabbitConsumer) Consume(ctx context.Context, handler func([]byte) error
 		nil,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("consume: %w", err)
 	}
+
+	c.log.Info("consumer started")
+
+	closeCh := ch.NotifyClose(make(chan *amqp.Error))
 
 	for {
 		select {
-		case msg := <-msgs:
-			err := handler(msg.Body)
-			if err != nil {
+		case msg, ok := <-msgs:
+			if !ok {
+				return fmt.Errorf("msgs channel closed")
+			}
+
+			c.log.Debug("message received", "routing_key", msg.RoutingKey)
+
+			if err := handler(msg.Body); err != nil {
+				c.log.Error("handler failed", "error", err)
 				_ = msg.Nack(false, true)
 				continue
 			}
+
 			_ = msg.Ack(false)
+
+		case err := <-closeCh:
+			return fmt.Errorf("channel closed: %v", err)
+
 		case <-ctx.Done():
+			c.log.Info("consumeOnce stopped by context")
 			return ctx.Err()
 		}
 	}
-}
-
-func (c *RabbitConsumer) Close() error {
-	if c.ch != nil {
-		_ = c.ch.Close()
-	}
-	if c.conn != nil {
-		return c.conn.Close()
-	}
-	return nil
 }

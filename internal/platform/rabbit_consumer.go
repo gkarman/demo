@@ -1,14 +1,14 @@
 package platform
 
 import (
-	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/gkarman/demo/internal/config"
 	"github.com/gkarman/demo/internal/infrastructure/mq"
 )
 
-func NewRabbitConsumer(cfg *config.Config) (*mq.RabbitConsumer, error) {
+func NewRabbitConsumer(cfg *config.Config, log *slog.Logger) (*mq.RabbitConsumer, error) {
 	configRabbit := mq.Config{
 		User:           cfg.RabbitMQ.User,
 		Password:       cfg.RabbitMQ.Password,
@@ -18,18 +18,15 @@ func NewRabbitConsumer(cfg *config.Config) (*mq.RabbitConsumer, error) {
 		ReconnectDelay: time.Duration(cfg.RabbitMQ.ReconnectDelay) * time.Second,
 	}
 
-	consumer, err := mq.NewRabbitConsumer(
+	consumer := mq.NewRabbitConsumer(
 		configRabbit,
 		"worker.notify",
 		[]string{
 			"car.#",
 			"user.#",
 		},
+		log,
 	)
-
-	if err != nil {
-		return nil, fmt.Errorf("unable to create rabbit consumer: %w", err)
-	}
 
 	return consumer, nil
 }

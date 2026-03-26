@@ -9,6 +9,7 @@ type Config struct {
 	ServerHttp ServerHttpConfig
 	ServerGRPC ServerGRPCConfig
 	RabbitMQ   RabbitMQConfig
+	Mail       MailConfig
 }
 
 type DBConfig struct {
@@ -51,4 +52,12 @@ type RabbitMQConfig struct {
 	Exchange string `env:"RABBITMQ_EXCHANGE" env-default:"5672"`
 	PoolSize int `env:"RABBITMQ_POOL_SIZE" env-default:"10"`
 	ReconnectDelay int `env:"RABBITMQ_RECONNECT_DELAY_IN_SECONDS" env-default:"3"`
+}
+
+type MailConfig struct {
+	Driver string `env:"MAIL_DRIVER" env-default:"smtp"`
+	Host string `env:"MAIL_HOST" env-default:"localhost"`
+	Port string `env:"MAIL_PORT" env-default:"2525"`
+	User string `env:"MAIL_USER" env-default:"user"`
+	Password string `env:"MAIL_PASSWORD" env-default:"password"`
 }

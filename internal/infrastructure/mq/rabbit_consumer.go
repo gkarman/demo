@@ -70,7 +70,7 @@ func (c *RabbitConsumer) Consume(ctx context.Context, handler func([]byte) error
 	msgs, err := c.ch.Consume(
 		c.queue,
 		"",
-		true, // auto-ack (пока упрощаем)
+		false,
 		false,
 		false,
 		false,
@@ -83,10 +83,12 @@ func (c *RabbitConsumer) Consume(ctx context.Context, handler func([]byte) error
 	for {
 		select {
 		case msg := <-msgs:
-			if err := handler(msg.Body); err != nil {
-				fmt.Println("handle error:", err)
+			err := handler(msg.Body)
+			if err != nil {
+				_ = msg.Nack(false, true)
+				continue
 			}
-
+			_ = msg.Ack(false)
 		case <-ctx.Done():
 			return ctx.Err()
 		}

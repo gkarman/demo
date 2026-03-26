@@ -1,10 +1,10 @@
-package car
+package service
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/gkarman/demo/internal/application/service/car/requestdto"
+	"github.com/gkarman/demo/internal/application/car/requestdto"
 	"github.com/gkarman/demo/internal/domain/car"
 )
 

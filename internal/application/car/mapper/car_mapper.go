@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"github.com/gkarman/demo/internal/application/service/car/responsedto"
+	"github.com/gkarman/demo/internal/application/car/responsedto"
 	"github.com/gkarman/demo/internal/domain/car"
 )
 

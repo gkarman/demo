@@ -3,7 +3,7 @@ package http
 import (
 	"log/slog"
 
-	car3 "github.com/gkarman/demo/internal/application/service/car"
+	"github.com/gkarman/demo/internal/application/car/service"
 	"github.com/gkarman/demo/internal/infrastructure/dispatcher"
 	"github.com/gkarman/demo/internal/infrastructure/repository/car"
 	"github.com/gkarman/demo/internal/infrastructure/transport/http/handler"
@@ -30,19 +30,19 @@ func registerHomeRoutes(r *chi.Mux) {
 func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool, d *dispatcher.Dispatcher) {
 	repo := car.New(db)
 
-	listSvc := car3.NewList(repo)
+	listSvc := service.NewList(repo)
 	listHandler := car2.NewList(listSvc)
 
-	getCarSvc := car3.NewGet(repo)
+	getCarSvc := service.NewGet(repo)
 	getCarHandler := car2.NewGetCarHandler(getCarSvc)
 
-	createCarSvc := car3.NewCreate(repo, d)
+	createCarSvc := service.NewCreate(repo, d)
 	createHandler := car2.NewCreate(createCarSvc)
 
-	updateCarSvc := car3.NewUpdate(repo)
+	updateCarSvc := service.NewUpdate(repo)
 	updateHandler := car2.NewUpdate(updateCarSvc)
 
-	deleteCarSvc := car3.NewDelete(repo)
+	deleteCarSvc := service.NewDelete(repo)
 	deleteHandler := car2.NewDelete(deleteCarSvc)
 
 	r.Route("/api/v1", func(r chi.Router) {

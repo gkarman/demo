@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	"github.com/gkarman/demo/internal/application"
 	carevents "github.com/gkarman/demo/internal/domain/car/events"
 	"github.com/gkarman/demo/internal/infrastructure/events/mappers"
-	"github.com/gkarman/demo/internal/infrastructure/mq"
 )
 
-func CarCreatedToRabbitHandler(publisher mq.Publisher, log *slog.Logger) func(ctx context.Context, e any) {
+func CarCreatedToRabbitHandler(publisher application.Publisher, log *slog.Logger) func(ctx context.Context, e any) {
 
 	return func(ctx context.Context, e any) {
 		event, ok := e.(*carevents.CarCreated)

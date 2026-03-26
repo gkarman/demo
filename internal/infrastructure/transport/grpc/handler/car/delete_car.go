@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	carv1 "github.com/gkarman/demo/api/gen/go/car/v1"
-	"github.com/gkarman/demo/internal/application/service/car/requestdto"
+	"github.com/gkarman/demo/internal/application/car/requestdto"
 	"github.com/gkarman/demo/internal/domain/car"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

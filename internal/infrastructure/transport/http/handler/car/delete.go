@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	carservice "github.com/gkarman/demo/internal/application/service/car"
-	"github.com/gkarman/demo/internal/application/service/car/requestdto"
+	"github.com/gkarman/demo/internal/application/car/requestdto"
+	carservice "github.com/gkarman/demo/internal/application/car/service"
 	"github.com/gkarman/demo/internal/domain/car"
 	"github.com/gkarman/demo/internal/infrastructure/logger"
 	"github.com/gkarman/demo/internal/infrastructure/transport/http/response"

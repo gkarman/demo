@@ -14,7 +14,7 @@ type RabbitConsumer struct {
 	queue string
 }
 
-func NewRabbitConsumer(cfg Config, queue string) (*RabbitConsumer, error) {
+func NewRabbitConsumer(cfg Config, queue string, bindings []string) (*RabbitConsumer, error) {
 	dsn := fmt.Sprintf("amqp://%s:%s@%s:%s/", cfg.User, cfg.Password, cfg.Host, cfg.Port)
 
 	conn, err := amqp.Dial(dsn)
@@ -41,16 +41,18 @@ func NewRabbitConsumer(cfg Config, queue string) (*RabbitConsumer, error) {
 		return nil, err
 	}
 
-	err = ch.QueueBind(
-		queue,
-		"#", // routing key (пока всё подряд)
-		cfg.Exchange,
-		false,
-		nil,
-	)
-	if err != nil {
-		conn.Close()
-		return nil, err
+	for _, key := range bindings {
+		err = ch.QueueBind(
+			queue,
+			key,
+			cfg.Exchange,
+			false,
+			nil,
+		)
+		if err != nil {
+			conn.Close()
+			return nil, err
+		}
 	}
 
 	return &RabbitConsumer{

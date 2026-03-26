@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gkarman/demo/internal/config"
@@ -17,5 +18,18 @@ func NewRabbitConsumer(cfg *config.Config) (*mq.RabbitConsumer, error) {
 		ReconnectDelay: time.Duration(cfg.RabbitMQ.ReconnectDelay) * time.Second,
 	}
 
-	return mq.NewRabbitConsumer(configRabbit, "notify_queue")
+	consumer, err := mq.NewRabbitConsumer(
+		configRabbit,
+		"worker.notify",
+		[]string{
+			"car.#",
+			"user.#",
+		},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to create rabbit consumer: %w", err)
+	}
+
+	return consumer, nil
 }

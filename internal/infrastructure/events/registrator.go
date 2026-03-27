@@ -2,7 +2,6 @@ package events
 
 import (
 	"log/slog"
-	"reflect"
 
 	"github.com/gkarman/demo/internal/application"
 	"github.com/gkarman/demo/internal/application/car/handlers"
@@ -11,6 +10,6 @@ import (
 )
 
 func RegisterEventHandlers(d *dispatcher.Dispatcher, log *slog.Logger, publisher application.Publisher) {
-	d.Register(reflect.TypeOf(&car.Created{}), handlers.CarCreatedLogHandler(log))
-	d.Register(reflect.TypeOf(&car.Created{}), handlers.CarCreatedToRabbitHandler(publisher, log))
+	d.Register(&car.Created{}, handlers.CarCreatedLogHandler(log))
+	d.Register(&car.Created{}, handlers.CarCreatedToRabbitHandler(publisher, log))
 }

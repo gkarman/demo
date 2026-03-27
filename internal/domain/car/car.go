@@ -16,7 +16,7 @@ func New(id string, name string) *Car {
 		Name: name,
 	}
 
-	event := Created{
+	event := &Created{
 		ID:   car.ID,
 		Name: car.Name,
 		At:   time.Now(),

@@ -17,14 +17,21 @@ func New() *Dispatcher {
 	}
 }
 
+func normalize(t reflect.Type) reflect.Type {
+	if t.Kind() == reflect.Ptr {
+		return t.Elem()
+	}
+	return t
+}
+
 func (d *Dispatcher) Register(eventType any, h Handler) {
-	t := reflect.TypeOf(eventType)
+	t := normalize(reflect.TypeOf(eventType))
 	d.handlers[t] = append(d.handlers[t], h)
 }
 
 func (d *Dispatcher) Dispatch(ctx context.Context, events []any) {
 	for _, event := range events {
-		t := reflect.TypeOf(event)
+		t := normalize(reflect.TypeOf(event))
 		if hs, ok := d.handlers[t]; ok {
 			for _, h := range hs {
 				h(ctx, event)

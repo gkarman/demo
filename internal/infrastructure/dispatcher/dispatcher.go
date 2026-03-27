@@ -2,29 +2,30 @@ package dispatcher
 
 import (
 	"context"
-
-	carevents "github.com/gkarman/demo/internal/domain/car/events"
+	"reflect"
 )
 
 type Handler func(ctx context.Context, e any)
 
 type Dispatcher struct {
-	handlers map[string][]Handler
+	handlers map[reflect.Type][]Handler
 }
 
 func New() *Dispatcher {
 	return &Dispatcher{
-		handlers: make(map[string][]Handler),
+		handlers: make(map[reflect.Type][]Handler),
 	}
 }
 
-func (d *Dispatcher) Register(eventName string, h Handler) {
-	d.handlers[eventName] = append(d.handlers[eventName], h)
+func (d *Dispatcher) Register(eventType any, h Handler) {
+	t := reflect.TypeOf(eventType)
+	d.handlers[t] = append(d.handlers[t], h)
 }
 
-func (d *Dispatcher) Dispatch(ctx context.Context, events []carevents.Domain) {
+func (d *Dispatcher) Dispatch(ctx context.Context, events []any) {
 	for _, event := range events {
-		if hs, ok := d.handlers[event.EventName()]; ok {
+		t := reflect.TypeOf(event)
+		if hs, ok := d.handlers[t]; ok {
 			for _, h := range hs {
 				h(ctx, event)
 			}

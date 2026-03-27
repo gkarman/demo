@@ -1,13 +1,13 @@
 package car
 
 import (
-	"github.com/gkarman/demo/internal/domain/car/events"
+	"time"
 )
 
 type Car struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
-	events []events.Domain
+	events []any
 }
 
 func New(id string, name string) *Car {
@@ -16,16 +16,20 @@ func New(id string, name string) *Car {
 		Name: name,
 	}
 
-	e := events.NewCarCreated(car.ID, car.Name)
-	car.addEvent(e)
+	event := Created{
+		ID:   car.ID,
+		Name: car.Name,
+		At:   time.Now(),
+	}
+	car.addEvent(event)
 	return car
 }
 
-func (c *Car) addEvent(e events.Domain) {
+func (c *Car) addEvent(e any) {
 	c.events = append(c.events, e)
 }
 
-func (c *Car) PullEvents() []events.Domain {
+func (c *Car) PullEvents() []any {
 	evs := c.events
 	c.events = nil
 	return evs

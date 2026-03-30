@@ -16,7 +16,7 @@ func RegisterServices(server *Server, log *slog.Logger, db *pgxpool.Pool, d *dis
 }
 
 func registerCarService(server *Server, log *slog.Logger, db *pgxpool.Pool, d *dispatcher.Dispatcher) {
-	repo := carrepository.New(db)
+	repo := carrepository.NewPostgresRepo(db)
 	getSvc := service.NewGet(repo)
 	listSvc := service.NewList(repo)
 	createSvc := service.NewCreate(repo, d)

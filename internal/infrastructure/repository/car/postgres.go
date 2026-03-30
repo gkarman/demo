@@ -10,17 +10,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Repository struct {
+type PostgresRepo struct {
 	db *pgxpool.Pool
 }
 
-func New(db *pgxpool.Pool) *Repository {
-	return &Repository{
+func NewPostgresRepo(db *pgxpool.Pool) *PostgresRepo {
+	return &PostgresRepo{
 		db: db,
 	}
 }
 
-func (r *Repository) List(ctx context.Context) ([]*car.Car, error) {
+func (r *PostgresRepo) List(ctx context.Context) ([]*car.Car, error) {
 	const q = `
 		SELECT id, name
 		FROM cars
@@ -49,7 +49,7 @@ func (r *Repository) List(ctx context.Context) ([]*car.Car, error) {
 	return carList, nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, id string) (*car.Car, error) {
+func (r *PostgresRepo) GetByID(ctx context.Context, id string) (*car.Car, error) {
 	const q = `
 		SELECT id, name
 		FROM cars
@@ -69,7 +69,7 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*car.Car, error) {
 	return &c, nil
 }
 
-func (r *Repository) Save(ctx context.Context, car *car.Car) error {
+func (r *PostgresRepo) Save(ctx context.Context, car *car.Car) error {
 	const q = `
 		INSERT INTO cars (id, name) VALUES ($1, $2)
 	`
@@ -84,7 +84,7 @@ func (r *Repository) Save(ctx context.Context, car *car.Car) error {
 	return err
 }
 
-func (r *Repository) Update(ctx context.Context, car *car.Car) error {
+func (r *PostgresRepo) Update(ctx context.Context, car *car.Car) error {
 	const q = `
 		UPDATE cars SET name = $2 WHERE id = $1
 	`
@@ -99,7 +99,7 @@ func (r *Repository) Update(ctx context.Context, car *car.Car) error {
 	return err
 }
 
-func (r *Repository) Delete(ctx context.Context, id string) error {
+func (r *PostgresRepo) Delete(ctx context.Context, id string) error {
 	const q = `
 		DELETE FROM cars WHERE id = $1
 	`

@@ -28,7 +28,7 @@ func registerHomeRoutes(r *chi.Mux) {
 }
 
 func registerCarRoutes(r *chi.Mux, db *pgxpool.Pool, d *dispatcher.Dispatcher) {
-	repo := car.New(db)
+	repo := car.NewPostgresRepo(db)
 
 	listSvc := service.NewList(repo)
 	listHandler := car2.NewList(listSvc)
